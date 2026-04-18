@@ -1,38 +1,38 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useDialog, useMessage } from "naive-ui";
 
-import AttachmentCard from "../components/attachments/AttachmentCard.vue";
-import AttachmentEditorModal from "../components/attachments/AttachmentEditorModal.vue";
-import WeaponRemoteSelect from "../components/weapons/WeaponRemoteSelect.vue";
-import EmptyState from "../components/common/EmptyState.vue";
-import PaginationFooter from "../components/common/PaginationFooter.vue";
-import ResultSummary from "../components/common/ResultSummary.vue";
-import { adminAttachmentsApi } from "../api/admin/attachments";
-import { useDeleteConfirm } from "../composables/useDeleteConfirm";
-import { useDirtyForm } from "../composables/useDirtyForm";
-import { usePagedRemoteList } from "../composables/usePagedRemoteList";
-import { debounce } from "../shared/utils/debounce";
-import { toSelectOptions } from "../shared/utils/naive";
+import AttachmentCard from "../../components/attachments/AttachmentCard.vue";
+import AttachmentEditorModal from "../../components/attachments/AttachmentEditorModal.vue";
+import WeaponRemoteSelect from "../../components/weapons/WeaponRemoteSelect.vue";
+import EmptyState from "../../components/common/EmptyState.vue";
+import PaginationFooter from "../../components/common/PaginationFooter.vue";
+import ResultSummary from "../../components/common/ResultSummary.vue";
+import { adminAttachmentsApi } from "../../api/admin/attachments";
+import { useDeleteConfirm } from "../../composables/useDeleteConfirm";
+import { useDirtyForm } from "../../composables/useDirtyForm";
+import { usePagedRemoteList } from "../../composables/usePagedRemoteList";
+import { debounce } from "../../shared/utils/debounce";
+import { toSelectOptions } from "../../shared/utils/naive";
 import {
   getAttachmentTagOptions,
   getGenerationOptions,
   getSlotOptions,
-} from "../shared/utils/labels";
+} from "../../shared/utils/labels";
 import type {
   Attachment,
   AttachmentTag,
   GenerationFilter,
   Slot,
   WeaponOption,
-} from "../shared/types";
+} from "../../shared/types";
 import {
   cloneAttachmentToForm,
   createEmptyAttachmentForm,
   createAttachmentFormSnapshot,
   type AttachmentFormState,
-} from "../shared/attachments/attachmentForm";
-import { buildAttachmentSavePayload } from "../shared/attachments/attachmentPayload";
+} from "../../shared/attachments/attachmentForm";
+import { buildAttachmentSavePayload } from "../../shared/attachments/attachmentPayload";
 
 type SlotFilter = Slot | "ALL";
 type TagFilter = AttachmentTag | "ALL";

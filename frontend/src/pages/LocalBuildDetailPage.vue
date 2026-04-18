@@ -2,13 +2,13 @@
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
-import BuildDetailView from "../../components/builds/BuildDetailView.vue";
-import EmptyState from "../../components/common/EmptyState.vue";
-import { publicAttachmentsApi } from "../../api/public/attachments";
-import { publicWeaponsApi } from "../../api/public/weapons";
-import { useLatestRequest } from "../../composables/useLatestRequest";
-import { useBuildsStore } from "../../stores/builds";
-import type { Attachment, Build, BuildDetail, BuildItem, Weapon } from "../../shared/types";
+import BuildDetailView from "../components/builds/BuildDetailView.vue";
+import EmptyState from "../components/common/EmptyState.vue";
+import { publicAttachmentsApi } from "../api/public/attachments";
+import { publicWeaponsApi } from "../api/public/weapons";
+import { useLatestRequest } from "../composables/useLatestRequest";
+import { useBuildsStore } from "../stores/builds";
+import type { Attachment, Build, BuildDetail, BuildItem, Weapon } from "../shared/types";
 
 const route = useRoute();
 const buildsStore = useBuildsStore();

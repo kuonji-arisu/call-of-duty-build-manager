@@ -18,14 +18,14 @@ const router = createRouter({
         { path: "", component: () => import("../pages/WeaponListPage.vue") },
         { path: "weapons/:id", component: () => import("../pages/WeaponDetailPage.vue") },
         { path: "builds/:id", component: () => import("../pages/BuildDetailPage.vue") },
-        { path: "my-builds/:id", component: () => import("../pages/user/UserBuildDetailPage.vue") },
-        { path: "my-builds", component: () => import("../pages/user/UserBuildsPage.vue") },
-        { path: "admin/settings", component: () => import("../pages/SettingsPage.vue"), meta: { requiresAdmin: true } },
-        { path: "admin/weapons", component: () => import("../pages/AdminWeaponsPage.vue"), meta: { requiresAdmin: true } },
-        { path: "admin/attachments", component: () => import("../pages/AdminAttachmentsPage.vue"), meta: { requiresAdmin: true } },
-        { path: "admin/weapon-attachment-bindings", component: () => import("../pages/AdminWeaponAttachmentBindingsPage.vue"), meta: { requiresAdmin: true } },
-        { path: "admin/attachment-effects", component: () => import("../pages/AdminAttachmentEffectDefinitionsPage.vue"), meta: { requiresAdmin: true } },
-        { path: "admin/builds", component: () => import("../pages/AdminBuildsPage.vue"), meta: { requiresAdmin: true } },
+        { path: "my-builds/:id", component: () => import("../pages/LocalBuildDetailPage.vue") },
+        { path: "my-builds", component: () => import("../pages/LocalBuildsPage.vue") },
+        { path: "admin/settings", component: () => import("../pages/admin/SettingsPage.vue"), meta: { requiresAdmin: true } },
+        { path: "admin/weapons", component: () => import("../pages/admin/AdminWeaponsPage.vue"), meta: { requiresAdmin: true } },
+        { path: "admin/attachments", component: () => import("../pages/admin/AdminAttachmentsPage.vue"), meta: { requiresAdmin: true } },
+        { path: "admin/weapon-attachment-bindings", component: () => import("../pages/admin/AdminWeaponAttachmentBindingsPage.vue"), meta: { requiresAdmin: true } },
+        { path: "admin/attachment-effects", component: () => import("../pages/admin/AdminAttachmentEffectDefinitionsPage.vue"), meta: { requiresAdmin: true } },
+        { path: "admin/builds", component: () => import("../pages/admin/AdminBuildsPage.vue"), meta: { requiresAdmin: true } },
       ],
     },
   ],
@@ -33,10 +33,15 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore(pinia);
-  await authStore.initialize();
+  authStore.initialize();
 
-  if (to.meta.guestOnly && authStore.isLoggedIn) {
-    return "/";
+  if (to.meta.guestOnly) {
+    if (!authStore.isLoggedIn) {
+      return true;
+    }
+
+    const currentUser = await authStore.ensureMe();
+    return currentUser ? "/" : true;
   }
 
   if (!to.meta.requiresAdmin) {
@@ -51,7 +56,14 @@ router.beforeEach(async (to) => {
   }
 
   const currentUser = await authStore.ensureMe();
-  if (currentUser?.role !== "ADMIN") {
+  if (!currentUser) {
+    return {
+      path: "/login",
+      query: { redirect: to.fullPath },
+    };
+  }
+
+  if (currentUser.role !== "ADMIN") {
     return "/";
   }
 

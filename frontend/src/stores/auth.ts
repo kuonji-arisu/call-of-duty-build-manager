@@ -4,6 +4,9 @@ import { authApi } from "../api/auth";
 import type { AuthUser, CaptchaPayload, LoginRequest } from "../shared/types";
 import { clearAccessToken, getAccessToken, setAccessToken } from "./auth/token";
 
+const AUTH_SESSION_CLEARED_EVENT = "auth:session-cleared";
+let sessionClearListenerRegistered = false;
+
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: getAccessToken(),
@@ -19,26 +22,45 @@ export const useAuthStore = defineStore("auth", {
     },
   },
   actions: {
-    async initialize() {
+    registerSessionClearListener() {
+      if (sessionClearListenerRegistered) {
+        return;
+      }
+
+      window.addEventListener(AUTH_SESSION_CLEARED_EVENT, () => {
+        this.token = "";
+        this.currentUser = null;
+        this.initialized = true;
+      });
+      sessionClearListenerRegistered = true;
+    },
+    initialize() {
+      this.registerSessionClearListener();
       const persistedToken = getAccessToken();
+      const tokenChanged = persistedToken !== this.token;
       this.token = persistedToken;
 
       if (!this.token) {
         this.currentUser = null;
-        this.initialized = true;
-        return;
+      } else if (tokenChanged) {
+        this.currentUser = null;
       }
 
-      if (this.initialized && this.currentUser) {
-        return;
+      this.initialized = true;
+    },
+    async verifySession() {
+      this.initialize();
+
+      if (!this.token) {
+        return null;
       }
 
       try {
         this.currentUser = await authApi.me();
+        return this.currentUser;
       } catch {
         this.clearSession();
-      } finally {
-        this.initialized = true;
+        return null;
       }
     },
     async refreshCaptcha(): Promise<CaptchaPayload> {
@@ -53,6 +75,8 @@ export const useAuthStore = defineStore("auth", {
       return response;
     },
     async ensureMe() {
+      this.initialize();
+
       if (!this.token) {
         return null;
       }
@@ -61,8 +85,7 @@ export const useAuthStore = defineStore("auth", {
         return this.currentUser;
       }
 
-      this.currentUser = await authApi.me();
-      return this.currentUser;
+      return this.verifySession();
     },
     async logout() {
       try {

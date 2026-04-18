@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 
 import EmptyState from "../components/common/EmptyState.vue";

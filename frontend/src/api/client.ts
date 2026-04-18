@@ -1,8 +1,8 @@
-import router from "../router";
 import { clearAccessToken, getAccessToken } from "../stores/auth/token";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
   "http://localhost:8080/api";
+const AUTH_SESSION_CLEARED_EVENT = "auth:session-cleared";
 
 interface RequestOptions {
   auth?: boolean;
@@ -66,11 +66,7 @@ export async function request<T>(
   if (!response.ok) {
     if (response.status === 401 && options.auth) {
       clearAccessToken();
-      const redirect = `${window.location.pathname}${window.location.search}`;
-      await router.push({
-        path: "/login",
-        query: { redirect },
-      });
+      window.dispatchEvent(new Event(AUTH_SESSION_CLEARED_EVENT));
     }
 
     throw new Error(errorMessageFromBody(data, response));

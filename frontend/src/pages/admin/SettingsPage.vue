@@ -2,9 +2,9 @@
 import { computed, reactive, ref, watchEffect } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useAppStore } from "../stores/app";
-import { getGenerationOptions } from "../shared/utils/labels";
-import { toSelectOptions } from "../shared/utils/naive";
+import { useAppStore } from "../../stores/app";
+import { getGenerationOptions } from "../../shared/utils/labels";
+import { toSelectOptions } from "../../shared/utils/naive";
 
 const appStore = useAppStore();
 const { settings } = storeToRefs(appStore);

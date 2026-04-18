@@ -1,30 +1,30 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useDialog, useMessage } from "naive-ui";
 
-import EmptyState from "../components/common/EmptyState.vue";
-import PaginationFooter from "../components/common/PaginationFooter.vue";
-import ResultSummary from "../components/common/ResultSummary.vue";
-import WeaponCard from "../components/weapons/WeaponCard.vue";
-import WeaponEditorModal from "../components/weapons/WeaponEditorModal.vue";
-import { adminWeaponsApi } from "../api/admin/weapons";
-import { useDeleteConfirm } from "../composables/useDeleteConfirm";
-import { useDirtyForm } from "../composables/useDirtyForm";
-import { usePagedRemoteList } from "../composables/usePagedRemoteList";
-import { debounce } from "../shared/utils/debounce";
-import { toSelectOptions } from "../shared/utils/naive";
+import EmptyState from "../../components/common/EmptyState.vue";
+import PaginationFooter from "../../components/common/PaginationFooter.vue";
+import ResultSummary from "../../components/common/ResultSummary.vue";
+import WeaponCard from "../../components/weapons/WeaponCard.vue";
+import WeaponEditorModal from "../../components/weapons/WeaponEditorModal.vue";
+import { adminWeaponsApi } from "../../api/admin/weapons";
+import { useDeleteConfirm } from "../../composables/useDeleteConfirm";
+import { useDirtyForm } from "../../composables/useDirtyForm";
+import { usePagedRemoteList } from "../../composables/usePagedRemoteList";
+import { debounce } from "../../shared/utils/debounce";
+import { toSelectOptions } from "../../shared/utils/naive";
 import {
   getGenerationOptions,
   getWeaponTypeOptions,
-} from "../shared/utils/labels";
-import type { GenerationFilter, Weapon, WeaponType } from "../shared/types";
+} from "../../shared/utils/labels";
+import type { GenerationFilter, Weapon, WeaponType } from "../../shared/types";
 import {
   cloneWeaponToForm,
   createEmptyWeaponForm,
   createWeaponFormSnapshot,
   type WeaponFormState,
-} from "../shared/weapons/weaponForm";
-import { buildWeaponSavePayload } from "../shared/weapons/weaponPayload";
+} from "../../shared/weapons/weaponForm";
+import { buildWeaponSavePayload } from "../../shared/weapons/weaponPayload";
 
 type WeaponTypeFilter = WeaponType | "ALL";
 type FavoriteFilter = "ALL" | "true" | "false";

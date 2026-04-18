@@ -1,16 +1,16 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useDialog, useMessage } from "naive-ui";
 
-import EmptyState from "../components/common/EmptyState.vue";
-import PaginationFooter from "../components/common/PaginationFooter.vue";
-import ResultSummary from "../components/common/ResultSummary.vue";
-import { adminEffectDefinitionsApi } from "../api/admin/effectDefinitions";
-import { useDeleteConfirm } from "../composables/useDeleteConfirm";
-import { usePagedRemoteList } from "../composables/usePagedRemoteList";
-import { debounce } from "../shared/utils/debounce";
-import { requireText } from "../shared/utils/validation";
-import type { AttachmentEffectDefinition, AttachmentEffectDefinitionSavePayload } from "../shared/types";
+import EmptyState from "../../components/common/EmptyState.vue";
+import PaginationFooter from "../../components/common/PaginationFooter.vue";
+import ResultSummary from "../../components/common/ResultSummary.vue";
+import { adminEffectDefinitionsApi } from "../../api/admin/effectDefinitions";
+import { useDeleteConfirm } from "../../composables/useDeleteConfirm";
+import { usePagedRemoteList } from "../../composables/usePagedRemoteList";
+import { debounce } from "../../shared/utils/debounce";
+import { requireText } from "../../shared/utils/validation";
+import type { AttachmentEffectDefinition, AttachmentEffectDefinitionSavePayload } from "../../shared/types";
 
 interface DefinitionFormState {
   id: string;

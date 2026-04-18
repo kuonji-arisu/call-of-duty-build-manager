@@ -2,18 +2,18 @@
 import { computed, ref, watch } from "vue";
 import { useMessage } from "naive-ui";
 
-import EmptyState from "../components/common/EmptyState.vue";
-import TagBadge from "../components/common/TagBadge.vue";
-import WeaponAttachmentAddModal from "../components/weapons/WeaponAttachmentAddModal.vue";
-import WeaponAttachmentSection from "../components/weapons/WeaponAttachmentSection.vue";
-import WeaponRemoteSelect from "../components/weapons/WeaponRemoteSelect.vue";
-import { adminAttachmentBindingsApi } from "../api/admin/attachmentBindings";
+import EmptyState from "../../components/common/EmptyState.vue";
+import TagBadge from "../../components/common/TagBadge.vue";
+import WeaponAttachmentAddModal from "../../components/weapons/WeaponAttachmentAddModal.vue";
+import WeaponAttachmentSection from "../../components/weapons/WeaponAttachmentSection.vue";
+import WeaponRemoteSelect from "../../components/weapons/WeaponRemoteSelect.vue";
+import { adminAttachmentBindingsApi } from "../../api/admin/attachmentBindings";
 import {
   getGenerationLabel,
   getSlotLabel,
   getWeaponTypeLabel,
-} from "../shared/utils/labels";
-import type { Attachment, Slot, WeaponOption } from "../shared/types";
+} from "../../shared/utils/labels";
+import type { Attachment, Slot, WeaponOption } from "../../shared/types";
 
 const message = useMessage();
 const selectedWeaponId = ref("");

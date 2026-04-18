@@ -1,34 +1,34 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { useDialog, useMessage } from "naive-ui";
 
-import WeaponRemoteSelect from "../../components/weapons/WeaponRemoteSelect.vue";
-import BuildCard from "../../components/builds/BuildCard.vue";
-import BuildEditorModal from "../../components/builds/BuildEditorModal.vue";
-import EmptyState from "../../components/common/EmptyState.vue";
-import PaginationFooter from "../../components/common/PaginationFooter.vue";
-import ResultSummary from "../../components/common/ResultSummary.vue";
-import { publicAttachmentsApi } from "../../api/public/attachments";
-import { publicWeaponsApi } from "../../api/public/weapons";
+import WeaponRemoteSelect from "../components/weapons/WeaponRemoteSelect.vue";
+import BuildCard from "../components/builds/BuildCard.vue";
+import BuildEditorModal from "../components/builds/BuildEditorModal.vue";
+import EmptyState from "../components/common/EmptyState.vue";
+import PaginationFooter from "../components/common/PaginationFooter.vue";
+import ResultSummary from "../components/common/ResultSummary.vue";
+import { publicAttachmentsApi } from "../api/public/attachments";
+import { publicWeaponsApi } from "../api/public/weapons";
 import {
   buildFormFromBuild,
   useBuildEditorSession,
-} from "../../composables/builds/useBuildEditorSession";
-import { useLatestRequest } from "../../composables/useLatestRequest";
-import { buildLocalBuildItemRecords, buildLocalBuildRecord } from "../../shared/builds/buildItemPayload";
-import { toSelectOptions } from "../../shared/utils/naive";
-import { getGenerationOptions } from "../../shared/utils/labels";
-import { toWeaponOption } from "../../shared/weapons/weaponOption";
+} from "../composables/builds/useBuildEditorSession";
+import { useLatestRequest } from "../composables/useLatestRequest";
+import { buildLocalBuildItemRecords, buildLocalBuildRecord } from "../shared/builds/buildItemPayload";
+import { toSelectOptions } from "../shared/utils/naive";
+import { getGenerationOptions } from "../shared/utils/labels";
+import { toWeaponOption } from "../shared/weapons/weaponOption";
 import type {
   AttachmentOption,
   Build,
   GenerationFilter,
   Slot,
   WeaponOption,
-} from "../../shared/types";
-import { useBuildsStore } from "../../stores/builds";
+} from "../shared/types";
+import { useBuildsStore } from "../stores/builds";
 
 type FavoriteFilter = "ALL" | "true" | "false";
 
