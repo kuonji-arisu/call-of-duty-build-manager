@@ -1,0 +1,87 @@
+# AGENTS.md
+
+Strict policy for AI coding assistants working in this repository.
+
+## Encoding And Chinese Text
+
+- Treat repository files as UTF-8 unless a file is clearly proven otherwise.
+- When reading files that contain Chinese text in the terminal, use UTF-8-safe commands. In PowerShell, prefer `Get-Content -Encoding utf8`.
+- When adding or editing Chinese UI copy, keep it natural, concise, and product-facing. Do not turn UI text into technical notes or refactor history.
+- Do not introduce encoding conversions, terminal-default encoding assumptions, or mixed-encoding files that may break Chinese text.
+
+## Non-Negotiables
+
+- Do not initiate architectural refactors, boundary reshaping, directory reorganizations, or large-scale refactors unless explicitly asked.
+- Do not replace stable existing patterns because another pattern looks cleaner in theory.
+- Do not invent new framework layers, generic containers, repository wrappers, API aggregators, or broad hooks without a concrete need.
+- Do not move page-owned server list state into Pinia stores for reuse.
+- Do not rewrite `README.md`, `AGENTS.md`, or other project-level docs unless explicitly asked.
+- Do not reintroduce Tauri, desktop file flows, SQLite desktop assumptions, cloud-platform concepts, or full Gunsmith simulation scope.
+
+## Project Scope
+
+- This is a personal small-to-medium Web app for COD weapon, attachment, and build management.
+- Optimize for clarity, low-risk changes, and human maintainability.
+- Prefer extending the current structure over inventing a new one.
+- Keep changes local, direct, and verifiable.
+
+## Product Boundaries
+
+- Public browsing is anonymous and read-oriented.
+- Admin management is authenticated and maintenance-oriented.
+- Local builds live in browser `localStorage` and are not backend user data.
+- `/api/public/bootstrap` is only for lightweight initialization data such as `appInfo` and `settings`.
+- Do not put weapon, attachment, build, or build item lists into bootstrap.
+
+## Backend Rules
+
+- Keep `/api/public/**` and `/api/admin/**` semantics separate.
+- Write APIs should normally follow `request -> command -> command service`.
+- Do not use Row objects or complex domain models directly as write requests.
+- Aggregate saves should normally be one API call and one transaction.
+- Do not split common save flows into multiple calls that can leave partial state.
+- Keep delete protection, reference safety, and orphan-read behavior centralized in reference-guard style services.
+- Do not scatter reference safety into controllers or frontend pages.
+- Do not add `FOREIGN KEY` constraints or rely on `ON DELETE CASCADE` in `schema.sql`.
+- Keep MyBatis usage direct and business-oriented.
+- Do not add new mapper/service layers unless they remove clear duplication or isolate complexity that is already causing maintenance problems.
+- Do not add meaningless umbrella services that only forward to existing services.
+
+## Frontend Rules
+
+- Import APIs by domain module under `admin` or `public`.
+- Do not restore a large aggregate API object.
+- Pinia is for real client state: auth, app settings, generation context, and local builds.
+- Pinia is not a cache for server-paged business lists.
+- Pages may own filters, pagination, modals, delete confirmations, and edit flows.
+- Do not force page interaction state into broad reusable hooks.
+- Add a composable only when it has at least two callers or isolates a genuinely complex boundary.
+- Parent pages own stable reactive edit forms.
+- Modals edit fields; they do not replace whole form objects.
+- Keep local builds, admin recommended builds, and public browsing as separate product flows.
+
+## Maintainability Rules
+
+- A normal business flow should be readable in a small number of files.
+- Prefer direct names over clever abstractions.
+- File structure must support fast navigation.
+- Some repetition is acceptable.
+- Do not remove small duplication by creating long import chains or indirect control flow.
+- Split UI components by visual or business blocks, not mechanically.
+- Types, payload builders, and helpers must reduce understanding cost.
+- Delete obsolete compatibility shells, fake entry points, and APIs that should no longer be used.
+
+## Safe Change Checklist
+
+- Scan the relevant call chain before editing.
+- Find the current stable entry point before adding a new one.
+- Confirm references before deleting APIs, mappers, stores, routes, or components.
+- Treat API contracts, storage, delete protection, and orphan-reference behavior as high-risk.
+- If unsure, choose the smaller local change.
+- Do not modify unrelated business code, formatting, or file organization.
+
+## Verification
+
+- For frontend changes, prefer `pnpm build`.
+- For backend changes, prefer `./gradlew test`; on Windows, use `.\gradlew.bat test`.
+- If verification cannot run, state why and describe the remaining risk.

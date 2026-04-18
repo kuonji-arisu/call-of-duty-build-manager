@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.kuonjiarisu.backend.mapper.AttachmentMapper">
+  <select id="findAllRows" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    ORDER BY sort_order ASC, name ASC, id ASC
+  </select>
+
+  <sql id="attachmentFilters">
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND name LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+      <if test="slot != null and slot != ''">
+        AND slot = #{slot}
+      </if>
+      <if test="generation != null and generation != ''">
+        AND EXISTS (
+          SELECT 1
+          FROM attachment_generations generation_filter
+          WHERE generation_filter.attachment_id = attachments.id
+            AND generation_filter.generation = #{generation}
+        )
+      </if>
+      <if test="tag != null and tag != ''">
+        AND JSON_CONTAINS(tags, JSON_QUOTE(#{tag}))
+      </if>
+      <if test="weaponId != null and weaponId != ''">
+        AND EXISTS (
+          SELECT 1
+          FROM attachment_weapons weapon_filter
+          WHERE weapon_filter.attachment_id = attachments.id
+            AND weapon_filter.weapon_id = #{weaponId}
+        )
+      </if>
+    </where>
+  </sql>
+
+  <select id="findRows" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    <include refid="attachmentFilters" />
+    ORDER BY sort_order ASC, name ASC, id ASC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countRows" resultType="long">
+    SELECT COUNT(*)
+    FROM attachments
+    <include refid="attachmentFilters" />
+  </select>
+
+  <sql id="attachmentBindingCandidateFilters">
+    <where>
+      AND slot IN
+      <foreach collection="weaponSlots" item="weaponSlot" open="(" separator="," close=")">
+        #{weaponSlot}
+      </foreach>
+      AND EXISTS (
+        SELECT 1
+        FROM attachment_generations generation_overlap
+        WHERE generation_overlap.attachment_id = attachments.id
+          AND generation_overlap.generation IN
+          <foreach collection="weaponGenerations" item="weaponGeneration" open="(" separator="," close=")">
+            #{weaponGeneration}
+          </foreach>
+      )
+      <if test="keyword != null and keyword != ''">
+        AND name LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+      <if test="slot != null and slot != ''">
+        AND slot = #{slot}
+      </if>
+      <if test="generation != null and generation != ''">
+        AND EXISTS (
+          SELECT 1
+          FROM attachment_generations generation_filter
+          WHERE generation_filter.attachment_id = attachments.id
+            AND generation_filter.generation = #{generation}
+        )
+      </if>
+      <if test="tag != null and tag != ''">
+        AND JSON_CONTAINS(tags, JSON_QUOTE(#{tag}))
+      </if>
+      <if test="bound != null and bound == true">
+        AND EXISTS (
+          SELECT 1
+          FROM attachment_weapons binding_filter
+          WHERE binding_filter.attachment_id = attachments.id
+            AND binding_filter.weapon_id = #{weaponId}
+        )
+      </if>
+      <if test="bound != null and bound == false">
+        AND NOT EXISTS (
+          SELECT 1
+          FROM attachment_weapons binding_filter
+          WHERE binding_filter.attachment_id = attachments.id
+            AND binding_filter.weapon_id = #{weaponId}
+        )
+      </if>
+    </where>
+  </sql>
+
+  <select id="findBindingCandidateRows" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    <include refid="attachmentBindingCandidateFilters" />
+    ORDER BY sort_order ASC, name ASC, id ASC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countBindingCandidateRows" resultType="long">
+    SELECT COUNT(*)
+    FROM attachments
+    <include refid="attachmentBindingCandidateFilters" />
+  </select>
+
+  <sql id="availableAttachmentFilters">
+    WHERE EXISTS (
+      SELECT 1
+      FROM attachment_weapons weapon_filter
+      WHERE weapon_filter.attachment_id = attachments.id
+        AND weapon_filter.weapon_id = #{weaponId}
+    )
+      AND slot IN
+      <foreach collection="weaponSlots" item="weaponSlot" open="(" separator="," close=")">
+        #{weaponSlot}
+      </foreach>
+      AND EXISTS (
+        SELECT 1
+        FROM attachment_generations generation_overlap
+        WHERE generation_overlap.attachment_id = attachments.id
+          AND generation_overlap.generation IN
+          <foreach collection="weaponGenerations" item="weaponGeneration" open="(" separator="," close=")">
+            #{weaponGeneration}
+          </foreach>
+      )
+      <if test="keyword != null and keyword != ''">
+        AND name LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+      <if test="slot != null and slot != ''">
+        AND slot = #{slot}
+      </if>
+      <if test="generation != null and generation != ''">
+        AND EXISTS (
+          SELECT 1
+          FROM attachment_generations generation_filter
+          WHERE generation_filter.attachment_id = attachments.id
+            AND generation_filter.generation = #{generation}
+        )
+      </if>
+      <if test="candidateGenerations != null and candidateGenerations.size > 0">
+        AND EXISTS (
+          SELECT 1
+          FROM attachment_generations candidate_generation_filter
+          WHERE candidate_generation_filter.attachment_id = attachments.id
+            AND candidate_generation_filter.generation IN
+            <foreach collection="candidateGenerations" item="candidateGeneration" open="(" separator="," close=")">
+              #{candidateGeneration}
+            </foreach>
+        )
+      </if>
+      <if test="tag != null and tag != ''">
+        AND JSON_CONTAINS(tags, JSON_QUOTE(#{tag}))
+      </if>
+  </sql>
+
+  <select id="findAvailableRowsForWeapon" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    <include refid="availableAttachmentFilters" />
+    ORDER BY sort_order ASC, name ASC, id ASC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countAvailableRowsForWeapon" resultType="long">
+    SELECT COUNT(*)
+    FROM attachments
+    <include refid="availableAttachmentFilters" />
+  </select>
+
+  <select id="findAvailableOptionRowsForWeapon" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    WHERE EXISTS (
+      SELECT 1
+      FROM attachment_weapons weapon_filter
+      WHERE weapon_filter.attachment_id = attachments.id
+        AND weapon_filter.weapon_id = #{weaponId}
+    )
+      AND slot IN
+      <foreach collection="weaponSlots" item="weaponSlot" open="(" separator="," close=")">
+        #{weaponSlot}
+      </foreach>
+      AND EXISTS (
+        SELECT 1
+        FROM attachment_generations generation_overlap
+        WHERE generation_overlap.attachment_id = attachments.id
+          AND generation_overlap.generation IN
+          <foreach collection="weaponGenerations" item="weaponGeneration" open="(" separator="," close=")">
+            #{weaponGeneration}
+          </foreach>
+      )
+      <if test="slot != null and slot != ''">
+        AND slot = #{slot}
+      </if>
+    ORDER BY sort_order ASC, name ASC, id ASC
+  </select>
+
+  <select id="findRowById" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    WHERE id = #{id}
+  </select>
+
+  <select id="findRowsByIds" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    SELECT
+      id,
+      name,
+      subtitle,
+      slot,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachments
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY sort_order ASC, name ASC, id ASC
+  </select>
+
+  <select id="findWeaponIdsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT attachment_id AS ownerId, weapon_id AS value
+    FROM attachment_weapons
+    WHERE attachment_id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY attachment_id ASC, weapon_id ASC
+  </select>
+
+  <select id="findAttachmentIdsBoundToWeapon" resultType="string">
+    SELECT attachment_id
+    FROM attachment_weapons
+    WHERE weapon_id = #{weaponId}
+      AND attachment_id IN
+      <foreach collection="attachmentIds" item="attachmentId" open="(" separator="," close=")">
+        #{attachmentId}
+      </foreach>
+    ORDER BY attachment_id ASC
+  </select>
+
+  <select id="findAllGenerations" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT attachment_id AS ownerId, generation AS value
+    FROM attachment_generations
+    ORDER BY attachment_id ASC, generation ASC
+  </select>
+
+  <select id="findGenerationsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT attachment_id AS ownerId, generation AS value
+    FROM attachment_generations
+    WHERE attachment_id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY attachment_id ASC, generation ASC
+  </select>
+
+  <select id="findAllEffects" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectRow">
+    SELECT
+      attachment_id AS attachmentId,
+      definition_id AS definitionId,
+      effect_type AS effectType,
+      level
+    FROM attachment_effects
+    ORDER BY attachment_id ASC, effect_type ASC, level DESC, definition_id ASC
+  </select>
+
+  <select id="findEffectsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectRow">
+    SELECT
+      attachment_id AS attachmentId,
+      definition_id AS definitionId,
+      effect_type AS effectType,
+      level
+    FROM attachment_effects
+    WHERE attachment_id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY attachment_id ASC, effect_type ASC, level DESC, definition_id ASC
+  </select>
+
+  <select id="countById" resultType="int">
+    SELECT COUNT(*) FROM attachments WHERE id = #{id}
+  </select>
+
+  <select id="countBuildItemsByAttachmentId" resultType="int">
+    SELECT COUNT(*) FROM build_items WHERE attachment_id = #{attachmentId}
+  </select>
+
+  <select id="countBuildItemsByWeaponIdAndAttachmentIds" resultType="int">
+    SELECT COUNT(*)
+    FROM build_items item
+    INNER JOIN builds build ON build.id = item.build_id
+    WHERE build.weapon_id = #{weaponId}
+      AND item.attachment_id IN
+      <foreach collection="attachmentIds" item="attachmentId" open="(" separator="," close=")">
+        #{attachmentId}
+      </foreach>
+  </select>
+
+  <insert id="upsertRow" parameterType="io.github.kuonjiarisu.backend.model.AttachmentRow">
+    INSERT INTO attachments (
+      id, name, subtitle, slot, tags, sort_order, created_at, updated_at
+    ) VALUES (
+      #{id},
+      #{name},
+      #{subtitle},
+      #{slot},
+      #{tagsJson},
+      #{sortOrder},
+      #{createdAt},
+      #{updatedAt}
+    )
+    ON DUPLICATE KEY UPDATE
+      name = VALUES(name),
+      subtitle = VALUES(subtitle),
+      slot = VALUES(slot),
+      tags = VALUES(tags),
+      sort_order = VALUES(sort_order),
+      updated_at = VALUES(updated_at)
+  </insert>
+
+  <delete id="deleteWeaponIdsByAttachmentId">
+    DELETE FROM attachment_weapons WHERE attachment_id = #{attachmentId}
+  </delete>
+
+  <delete id="deleteGenerationsByAttachmentId">
+    DELETE FROM attachment_generations WHERE attachment_id = #{attachmentId}
+  </delete>
+
+  <delete id="deleteEffectsByAttachmentId">
+    DELETE FROM attachment_effects WHERE attachment_id = #{attachmentId}
+  </delete>
+
+  <insert id="insertWeaponBindingIfAbsent">
+    INSERT IGNORE INTO attachment_weapons (attachment_id, weapon_id)
+    VALUES (#{attachmentId}, #{weaponId})
+  </insert>
+
+  <delete id="deleteWeaponBindingsByWeaponIdAndAttachmentIds">
+    DELETE FROM attachment_weapons
+    WHERE weapon_id = #{weaponId}
+      AND attachment_id IN
+      <foreach collection="attachmentIds" item="attachmentId" open="(" separator="," close=")">
+        #{attachmentId}
+      </foreach>
+  </delete>
+
+  <insert id="insertGenerations">
+    INSERT INTO attachment_generations (attachment_id, generation)
+    VALUES
+    <foreach collection="values" item="value" separator=",">
+      (#{attachmentId}, #{value})
+    </foreach>
+  </insert>
+
+  <insert id="insertEffects">
+    INSERT INTO attachment_effects (attachment_id, definition_id, effect_type, level)
+    VALUES
+    <foreach collection="effects" item="effect" separator=",">
+      (#{attachmentId}, #{effect.definitionId}, #{effect.effectType}, #{effect.level})
+    </foreach>
+  </insert>
+
+  <delete id="deleteById">
+    DELETE FROM attachments WHERE id = #{id}
+  </delete>
+</mapper>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.kuonjiarisu.backend.mapper.AttachmentEffectDefinitionMapper">
+  <select id="findAll" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
+    SELECT
+      id,
+      label,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachment_effect_definitions
+    ORDER BY sort_order ASC, label ASC, id ASC
+  </select>
+
+  <select id="findOptions" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinitionOption">
+    SELECT
+      id,
+      label,
+      sort_order AS sortOrder
+    FROM attachment_effect_definitions
+    ORDER BY sort_order ASC, label ASC, id ASC
+  </select>
+
+  <select id="findPage" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
+    SELECT
+      id,
+      label,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachment_effect_definitions
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND label LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+    </where>
+    ORDER BY sort_order ASC, label ASC, id ASC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countPage" resultType="long">
+    SELECT COUNT(*)
+    FROM attachment_effect_definitions
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND label LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+    </where>
+  </select>
+
+  <select id="countById" resultType="int">
+    SELECT COUNT(*) FROM attachment_effect_definitions WHERE id = #{id}
+  </select>
+
+  <select id="countEffectsByDefinitionId" resultType="int">
+    SELECT COUNT(*) FROM attachment_effects WHERE definition_id = #{definitionId}
+  </select>
+
+  <insert id="upsert" parameterType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
+    INSERT INTO attachment_effect_definitions (
+      id, label, sort_order, created_at, updated_at
+    ) VALUES (
+      #{id},
+      #{label},
+      #{sortOrder},
+      #{createdAt},
+      #{updatedAt}
+    )
+    ON DUPLICATE KEY UPDATE
+      label = VALUES(label),
+      sort_order = VALUES(sort_order),
+      updated_at = VALUES(updated_at)
+  </insert>
+
+  <delete id="deleteById">
+    DELETE FROM attachment_effect_definitions WHERE id = #{id}
+  </delete>
+</mapper>

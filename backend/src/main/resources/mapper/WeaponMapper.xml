@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.kuonjiarisu.backend.mapper.WeaponMapper">
+  <select id="findAllRows" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
+    SELECT
+      id,
+      name,
+      weapon_type AS weaponType,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      is_favorite AS isFavorite,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM weapons
+    ORDER BY sort_order ASC, name ASC, id ASC
+  </select>
+
+  <sql id="weaponFilters">
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND name LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+      <if test="weaponType != null and weaponType != ''">
+        AND weapon_type = #{weaponType}
+      </if>
+      <if test="favorite != null">
+        AND is_favorite = #{favorite}
+      </if>
+      <if test="generation != null and generation != ''">
+        AND EXISTS (
+          SELECT 1
+          FROM weapon_generations generation_filter
+          WHERE generation_filter.weapon_id = weapons.id
+            AND generation_filter.generation = #{generation}
+        )
+      </if>
+    </where>
+  </sql>
+
+  <select id="findRows" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
+    SELECT
+      id,
+      name,
+      weapon_type AS weaponType,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      is_favorite AS isFavorite,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM weapons
+    <include refid="weaponFilters" />
+    ORDER BY sort_order ASC, name ASC, id ASC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countRows" resultType="long">
+    SELECT COUNT(*)
+    FROM weapons
+    <include refid="weaponFilters" />
+  </select>
+
+  <select id="findRowById" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
+    SELECT
+      id,
+      name,
+      weapon_type AS weaponType,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      is_favorite AS isFavorite,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM weapons
+    WHERE id = #{id}
+  </select>
+
+  <select id="findRowsByIds" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
+    SELECT
+      id,
+      name,
+      weapon_type AS weaponType,
+      CAST(tags AS CHAR) AS tagsJson,
+      sort_order AS sortOrder,
+      is_favorite AS isFavorite,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM weapons
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY sort_order ASC, name ASC, id ASC
+  </select>
+
+  <select id="findAllGenerations" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT weapon_id AS ownerId, generation AS value
+    FROM weapon_generations
+    ORDER BY weapon_id ASC, generation ASC
+  </select>
+
+  <select id="findGenerationsByWeaponIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT weapon_id AS ownerId, generation AS value
+    FROM weapon_generations
+    WHERE weapon_id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY weapon_id ASC, generation ASC
+  </select>
+
+  <select id="findAllSlots" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT weapon_id AS ownerId, slot AS value
+    FROM weapon_slots
+    ORDER BY weapon_id ASC, sort_order ASC, slot ASC
+  </select>
+
+  <select id="findSlotsByWeaponIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
+    SELECT weapon_id AS ownerId, slot AS value
+    FROM weapon_slots
+    WHERE weapon_id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY weapon_id ASC, sort_order ASC, slot ASC
+  </select>
+
+  <select id="countById" resultType="int">
+    SELECT COUNT(*) FROM weapons WHERE id = #{id}
+  </select>
+
+  <select id="countBuildsByWeaponId" resultType="int">
+    SELECT COUNT(*) FROM builds WHERE weapon_id = #{weaponId}
+  </select>
+
+  <select id="countAttachmentBindingsByWeaponId" resultType="int">
+    SELECT COUNT(*) FROM attachment_weapons WHERE weapon_id = #{weaponId}
+  </select>
+
+  <select id="countBuildItemsByWeaponIdAndSlots" resultType="int">
+    SELECT COUNT(*)
+    FROM build_items item
+    INNER JOIN builds build ON build.id = item.build_id
+    WHERE build.weapon_id = #{weaponId}
+      AND item.slot IN
+      <foreach collection="slots" item="slot" open="(" separator="," close=")">
+        #{slot}
+      </foreach>
+  </select>
+
+  <select id="countAttachmentBindingsByWeaponIdAndSlots" resultType="int">
+    SELECT COUNT(*)
+    FROM attachment_weapons binding
+    INNER JOIN attachments attachment ON attachment.id = binding.attachment_id
+    WHERE binding.weapon_id = #{weaponId}
+      AND attachment.slot IN
+      <foreach collection="slots" item="slot" open="(" separator="," close=")">
+        #{slot}
+      </foreach>
+  </select>
+
+  <select id="countBuildsByWeaponIdAndGenerations" resultType="int">
+    SELECT COUNT(*)
+    FROM builds build
+    INNER JOIN build_generations generation ON generation.build_id = build.id
+    WHERE build.weapon_id = #{weaponId}
+      AND generation.generation IN
+      <foreach collection="generations" item="generation" open="(" separator="," close=")">
+        #{generation}
+      </foreach>
+  </select>
+
+  <select id="countInvalidAttachmentBindingsByWeaponIdAndGenerations" resultType="int">
+    SELECT COUNT(*)
+    FROM attachment_weapons binding
+    WHERE binding.weapon_id = #{weaponId}
+      AND NOT EXISTS (
+        SELECT 1
+        FROM attachment_generations generation
+        WHERE generation.attachment_id = binding.attachment_id
+          AND generation.generation IN
+          <foreach collection="generations" item="generation" open="(" separator="," close=")">
+            #{generation}
+          </foreach>
+      )
+  </select>
+
+  <insert id="upsertRow" parameterType="io.github.kuonjiarisu.backend.model.WeaponRow">
+    INSERT INTO weapons (
+      id, name, weapon_type, tags, sort_order, is_favorite, created_at, updated_at
+    ) VALUES (
+      #{id},
+      #{name},
+      #{weaponType},
+      #{tagsJson},
+      #{sortOrder},
+      #{isFavorite},
+      #{createdAt},
+      #{updatedAt}
+    )
+    ON DUPLICATE KEY UPDATE
+      name = VALUES(name),
+      weapon_type = VALUES(weapon_type),
+      tags = VALUES(tags),
+      sort_order = VALUES(sort_order),
+      is_favorite = VALUES(is_favorite),
+      updated_at = VALUES(updated_at)
+  </insert>
+
+  <delete id="deleteGenerationsByWeaponId">
+    DELETE FROM weapon_generations WHERE weapon_id = #{weaponId}
+  </delete>
+
+  <delete id="deleteSlotsByWeaponId">
+    DELETE FROM weapon_slots WHERE weapon_id = #{weaponId}
+  </delete>
+
+  <insert id="insertGenerations">
+    INSERT INTO weapon_generations (weapon_id, generation)
+    VALUES
+    <foreach collection="values" item="value" separator=",">
+      (#{weaponId}, #{value})
+    </foreach>
+  </insert>
+
+  <insert id="insertSlots">
+    INSERT INTO weapon_slots (weapon_id, slot, sort_order)
+    VALUES
+    <foreach collection="values" item="value" index="sortOrder" separator=",">
+      (#{weaponId}, #{value}, #{sortOrder})
+    </foreach>
+  </insert>
+
+  <delete id="deleteById">
+    DELETE FROM weapons WHERE id = #{id}
+  </delete>
+</mapper>
