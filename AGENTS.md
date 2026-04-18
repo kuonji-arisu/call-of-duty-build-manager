@@ -54,6 +54,7 @@ Strict policy for AI coding assistants working in this repository.
 - Import APIs by domain module under `admin` or `public`.
 - Do not import UI library internal implementation paths; use public exports or tiny local interfaces for the exact surface needed.
 - Do not restore a large aggregate API object.
+- Put frontend constants shared across modules under `shared/constants`, not feature-private folders.
 - Pinia is for real client state: auth, app settings, generation context, and local builds.
 - Pinia is not a cache for server-paged business lists.
 - Pages may own filters, pagination, modals, delete confirmations, and edit flows.

@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
 
 import { authApi } from "../api/auth";
+import { AUTH_SESSION_CLEARED_EVENT } from "../shared/constants/events";
 import type { AuthUser, CaptchaPayload, LoginRequest } from "../shared/types";
 import { clearAccessToken, getAccessToken, setAccessToken } from "./auth/token";
 
-const AUTH_SESSION_CLEARED_EVENT = "auth:session-cleared";
 let sessionClearListenerRegistered = false;
 
 export const useAuthStore = defineStore("auth", {

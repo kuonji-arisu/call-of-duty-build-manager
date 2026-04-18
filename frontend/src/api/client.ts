@@ -1,8 +1,8 @@
+import { AUTH_SESSION_CLEARED_EVENT } from "../shared/constants/events";
 import { clearAccessToken, getAccessToken } from "../stores/auth/token";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
   "http://localhost:8080/api";
-const AUTH_SESSION_CLEARED_EVENT = "auth:session-cleared";
 
 interface RequestOptions {
   auth?: boolean;
