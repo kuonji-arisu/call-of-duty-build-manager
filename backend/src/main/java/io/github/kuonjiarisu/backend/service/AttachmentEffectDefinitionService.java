@@ -12,6 +12,7 @@ import io.github.kuonjiarisu.backend.mapper.AttachmentEffectDefinitionMapper;
 import io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition;
 import io.github.kuonjiarisu.backend.model.AttachmentEffectDefinitionOption;
 import io.github.kuonjiarisu.backend.model.PageResult;
+import io.github.kuonjiarisu.backend.model.command.AttachmentEffectDefinitionSaveCommand;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 import io.github.kuonjiarisu.backend.support.PageSupport;
@@ -74,15 +75,31 @@ public class AttachmentEffectDefinitionService {
     }
 
     @Transactional
-    public AttachmentEffectDefinition save(AttachmentEffectDefinition definition) {
+    public AttachmentEffectDefinition create(AttachmentEffectDefinitionSaveCommand command) {
+        return save(null, command);
+    }
+
+    @Transactional
+    public AttachmentEffectDefinition update(String id, AttachmentEffectDefinitionSaveCommand command) {
+        var definitionId = DomainSupport.requireText(id, "属性词条 ID");
+        if (attachmentEffectDefinitionMapper.countById(definitionId) == 0) {
+            throw new IllegalArgumentException("属性词条不存在");
+        }
+        return save(definitionId, command);
+    }
+
+    private AttachmentEffectDefinition save(String requestedId, AttachmentEffectDefinitionSaveCommand command) {
+        var id = DomainSupport.keepOrGenerateId(requestedId, "attachment_effect_definition");
+        var current = attachmentEffectDefinitionMapper.findById(id);
+        var now = LocalDateTime.now();
         var normalized = new AttachmentEffectDefinition(
-            DomainSupport.keepOrGenerateId(definition.id(), "attachment_effect_definition"),
-            DomainSupport.requireText(definition.label(), "属性词条名称"),
-            definition.sortOrder() == null ? 0 : definition.sortOrder(),
-            DomainSupport.keepOrNow(definition.createdAt()),
-            LocalDateTime.now()
+            id,
+            DomainSupport.requireText(command.label(), "属性词条名称"),
+            command.sortOrder() == null ? 0 : command.sortOrder(),
+            current == null ? now : current.createdAt(),
+            now
         );
-        var existed = attachmentEffectDefinitionMapper.countById(normalized.id()) > 0;
+        var existed = current != null;
         attachmentEffectDefinitionMapper.upsert(normalized);
         log.info(
             "Saved attachment effect definition: definitionId={} operation={}",

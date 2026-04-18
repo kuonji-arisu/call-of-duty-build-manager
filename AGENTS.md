@@ -37,6 +37,7 @@ Strict policy for AI coding assistants working in this repository.
 
 - Keep `/api/public/**` and `/api/admin/**` semantics separate.
 - Write APIs should normally follow `request -> command -> command service`.
+- Admin create requests must not include `id`, `createdAt`, or `updatedAt`; update requests should take identity from the URL path and keep request bodies to business fields.
 - Do not use Row objects or complex domain models directly as write requests.
 - Aggregate saves should normally be one API call and one transaction.
 - Do not split common save flows into multiple calls that can leave partial state.

@@ -6,18 +6,16 @@ import EmptyState from "../components/common/EmptyState.vue";
 import PaginationFooter from "../components/common/PaginationFooter.vue";
 import ResultSummary from "../components/common/ResultSummary.vue";
 import { adminEffectDefinitionsApi } from "../api/admin/effectDefinitions";
+import { useDeleteConfirm } from "../composables/useDeleteConfirm";
 import { usePagedRemoteList } from "../composables/usePagedRemoteList";
 import { debounce } from "../shared/utils/debounce";
-import { createId, nowIso } from "../shared/utils/records";
 import { requireText } from "../shared/utils/validation";
-import type { AttachmentEffectDefinition } from "../shared/types";
+import type { AttachmentEffectDefinition, AttachmentEffectDefinitionSavePayload } from "../shared/types";
 
 interface DefinitionFormState {
   id: string;
   label: string;
   sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 const dialog = useDialog();
@@ -58,8 +56,6 @@ function createEmptyForm(): DefinitionFormState {
     id: "",
     label: "",
     sortOrder: 0,
-    createdAt: "",
-    updatedAt: "",
   };
 }
 
@@ -79,7 +75,11 @@ function openCreate() {
 }
 
 function openEdit(definition: AttachmentEffectDefinition) {
-  resetForm({ ...definition });
+  resetForm({
+    id: definition.id,
+    label: definition.label,
+    sortOrder: definition.sortOrder,
+  });
   editorVisible.value = true;
 }
 
@@ -123,16 +123,12 @@ async function saveDefinition() {
   errorMessage.value = "";
 
   try {
-    const timestamp = nowIso();
-    const payload: AttachmentEffectDefinition = {
-      id: form.id || createId("attachment_effect_definition"),
+    const payload: AttachmentEffectDefinitionSavePayload = {
       label: requireText(form.label, "请输入属性词条名称"),
       sortOrder: Number.isNaN(form.sortOrder) ? 0 : form.sortOrder,
-      createdAt: form.createdAt || timestamp,
-      updatedAt: timestamp,
     };
 
-    await adminEffectDefinitionsApi.saveAttachmentEffectDefinition(payload);
+    await adminEffectDefinitionsApi.saveAttachmentEffectDefinition(form.id, payload);
     await loadDefinitions();
     message.success("属性词条已保存。");
     closeEditor();
@@ -143,28 +139,20 @@ async function saveDefinition() {
   }
 }
 
-function confirmDelete(definition: AttachmentEffectDefinition) {
-  dialog.error({
-    title: "删除属性词条？",
-    content: `确认删除 ${definition.label} 吗？如果仍被配件效果引用，后端会拒绝删除。`,
-    positiveText: "删除",
-    negativeText: "取消",
-    positiveButtonProps: { type: "error" },
-    onPositiveClick: async () => {
-      deletingId.value = definition.id;
-      errorMessage.value = "";
-      try {
-        await adminEffectDefinitionsApi.deleteAttachmentEffectDefinition(definition.id);
-        await refreshAfterDelete();
-        message.success("属性词条已删除。");
-      } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : String(error);
-      } finally {
-        deletingId.value = "";
-      }
-    },
-  });
-}
+const { confirmDelete } = useDeleteConfirm<AttachmentEffectDefinition>({
+  dialog,
+  message,
+  deletingId,
+  getId: (definition) => definition.id,
+  title: "删除属性词条？",
+  content: (definition) => `确认删除 ${definition.label} 吗？如果仍被配件效果引用，后端会拒绝删除。`,
+  successText: "属性词条已删除。",
+  deleteAction: async (definition) => {
+    await adminEffectDefinitionsApi.deleteAttachmentEffectDefinition(definition.id);
+    await refreshAfterDelete();
+  },
+  onError: setErrorMessage,
+});
 </script>
 
 <template>

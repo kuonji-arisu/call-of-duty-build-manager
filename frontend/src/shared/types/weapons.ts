@@ -22,7 +22,6 @@ export interface WeaponOption {
 }
 
 export interface WeaponSavePayload {
-  id: string;
   name: string;
   weaponType: WeaponType;
   tags: WeaponTag[];
@@ -30,6 +29,4 @@ export interface WeaponSavePayload {
   slots: Slot[];
   sortOrder: number;
   isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
 }

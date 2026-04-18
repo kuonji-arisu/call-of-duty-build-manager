@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 
 import { matchesGenerationFilter } from "../shared/utils/generationFilter";
-import type { Build, BuildItem, BuildSavePayload } from "../shared/types";
+import type { Build, BuildItem } from "../shared/types";
 import { userBuildStorage } from "../storage/userBuildStorage";
 import { useGenerationStore } from "./generation";
 
@@ -60,7 +60,7 @@ export const useBuildsStore = defineStore("builds", {
       this.initialize();
       return this.buildItems.filter((item) => item.buildId === buildId);
     },
-    async saveBuildWithItems(build: BuildSavePayload, items: BuildItem[]) {
+    async saveBuildWithItems(build: Build, items: BuildItem[]) {
       this.initialize();
       const buildIndex = this.builds.findIndex((item) => item.id === build.id);
       const nextBuilds = [...this.builds];

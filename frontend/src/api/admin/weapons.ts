@@ -10,9 +10,9 @@ export const adminWeaponsApi = {
     request<WeaponOption[]>("/admin/weapons/options", undefined, { auth: true }),
   searchWeaponOptions: (query?: OptionSearchQuery) =>
     request<PageResult<WeaponOption>>(`/admin/weapons/search-options${toQueryString(query)}`, undefined, { auth: true }),
-  saveWeapon: (weapon: WeaponSavePayload) =>
-    request<Weapon>("/admin/weapons", {
-      method: "POST",
+  saveWeapon: (weaponId: string, weapon: WeaponSavePayload) =>
+    request<Weapon>(weaponId ? `/admin/weapons/${weaponId}` : "/admin/weapons", {
+      method: weaponId ? "PUT" : "POST",
       body: JSON.stringify(weapon),
     }, { auth: true }),
   deleteWeapon: (weaponId: string) =>

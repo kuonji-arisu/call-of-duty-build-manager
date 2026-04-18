@@ -46,21 +46,37 @@ public class AttachmentCommandService {
     }
 
     @Transactional
-    public Attachment save(AttachmentSaveCommand command) {
+    public Attachment create(AttachmentSaveCommand command) {
+        return save(null, command);
+    }
+
+    @Transactional
+    public Attachment update(String id, AttachmentSaveCommand command) {
+        var attachmentId = DomainSupport.requireText(id, "配件 ID");
+        if (attachmentMapper.countById(attachmentId) == 0) {
+            throw new IllegalArgumentException("配件不存在");
+        }
+        return save(attachmentId, command);
+    }
+
+    private Attachment save(String requestedId, AttachmentSaveCommand command) {
+        var id = DomainSupport.keepOrGenerateId(requestedId, "attachment");
+        var currentRow = attachmentMapper.findRowById(id);
+        var now = LocalDateTime.now();
         var normalized = new Attachment(
-            DomainSupport.keepOrGenerateId(command.id(), "attachment"),
+            id,
             DomainSupport.requireText(command.name(), "配件名称"),
             DomainSupport.requireText(command.subtitle(), "配件副标题"),
             DomainSupport.requireText(command.slot(), "配件槽位"),
-            currentWeaponIds(command.id()),
+            currentWeaponIds(id),
             DomainSupport.requireList(command.generations(), "配件代际"),
             DomainSupport.normalizeList(command.tags()),
             attachmentEffectNormalizer.normalize(command.effects()),
             command.sortOrder() == null ? 0 : command.sortOrder(),
-            DomainSupport.keepOrNow(command.createdAt()),
-            LocalDateTime.now()
+            currentRow == null ? now : currentRow.createdAt(),
+            now
         );
-        var existed = attachmentMapper.countById(normalized.id()) > 0;
+        var existed = currentRow != null;
 
         attachmentValidationService.validateExistingBindings(normalized.slot(), normalized.weaponIds());
         attachmentValidationService.validateEffectDefinitions(normalized.effects());

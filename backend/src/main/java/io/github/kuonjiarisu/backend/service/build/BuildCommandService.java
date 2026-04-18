@@ -2,6 +2,8 @@ package io.github.kuonjiarisu.backend.service.build;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,21 +43,39 @@ public class BuildCommandService {
     }
 
     @Transactional
-    public Build save(BuildSaveCommand command) {
+    public Build create(BuildSaveCommand command) {
+        return save(null, command);
+    }
+
+    @Transactional
+    public Build update(String id, BuildSaveCommand command) {
+        var buildId = DomainSupport.requireText(id, "配装 ID");
+        if (buildMapper.countById(buildId) == 0) {
+            throw new IllegalArgumentException("配装不存在");
+        }
+        return save(buildId, command);
+    }
+
+    private Build save(String requestedId, BuildSaveCommand command) {
+        var id = DomainSupport.keepOrGenerateId(requestedId, "build");
+        var currentRow = buildMapper.findBuildRowById(id);
+        var now = LocalDateTime.now();
         var normalized = new Build(
-            DomainSupport.keepOrGenerateId(command.id(), "build"),
+            id,
             DomainSupport.requireText(command.weaponId(), "所属武器"),
             DomainSupport.requireText(command.name(), "配装名称"),
             DomainSupport.requireList(command.generations(), "配装代际"),
             command.notes() == null ? null : command.notes().trim(),
             command.sortOrder() == null ? 0 : command.sortOrder(),
             Boolean.TRUE.equals(command.isFavorite()),
-            DomainSupport.keepOrNow(command.createdAt()),
-            LocalDateTime.now()
+            currentRow == null ? now : currentRow.createdAt(),
+            now
         );
-        var existed = buildMapper.countById(normalized.id()) > 0;
+        var existed = currentRow != null;
         var weapon = weaponService.findById(normalized.weaponId());
-        var normalizedItems = normalizeItems(normalized.id(), command.items());
+        var existingItemsBySlot = buildMapper.findBuildItemsByBuildId(normalized.id()).stream()
+            .collect(Collectors.toMap(BuildItem::slot, item -> item, (left, right) -> left));
+        var normalizedItems = normalizeItems(normalized.id(), command.items(), existingItemsBySlot, now);
         buildItemValidationService.validateItems(
             normalized,
             weapon,
@@ -107,19 +127,28 @@ public class BuildCommandService {
     }
 
     // 配装和配件项必须在同一个事务里整体替换，避免录入时出现“主表已保存、明细半旧半新”的状态。
-    private List<BuildItem> normalizeItems(String buildId, List<BuildItemSaveCommand> items) {
+    private List<BuildItem> normalizeItems(
+        String buildId,
+        List<BuildItemSaveCommand> items,
+        Map<String, BuildItem> existingItemsBySlot,
+        LocalDateTime now
+    ) {
         if (items == null || items.isEmpty()) {
             return List.of();
         }
 
         return items.stream()
-            .map(item -> new BuildItem(
-                DomainSupport.keepOrGenerateId(item.id(), "build_item"),
-                buildId,
-                DomainSupport.requireText(item.slot(), "槽位"),
-                DomainSupport.requireText(item.attachmentId(), "配件"),
-                DomainSupport.keepOrNow(item.createdAt())
-            ))
+            .map(item -> {
+                var slot = DomainSupport.requireText(item.slot(), "槽位");
+                var existing = existingItemsBySlot.get(slot);
+                return new BuildItem(
+                    existing == null ? DomainSupport.keepOrGenerateId(null, "build_item") : existing.id(),
+                    buildId,
+                    slot,
+                    DomainSupport.requireText(item.attachmentId(), "配件"),
+                    existing == null ? now : existing.createdAt()
+                );
+            })
             .toList();
     }
 }

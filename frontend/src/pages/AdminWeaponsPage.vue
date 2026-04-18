@@ -33,7 +33,6 @@ const dialog = useDialog();
 const message = useMessage();
 const saving = ref(false);
 const deletingId = ref("");
-const editorVisible = ref(false);
 const errorMessage = ref("");
 const filters = reactive({
   keyword: "",
@@ -76,6 +75,7 @@ const favoriteOptions = [
 const adminPageSizes = [10, 20, 50, 100];
 
 const form = reactive<WeaponFormState>(createEmptyWeaponForm());
+const editorVisible = ref(false);
 const editorTitle = computed(() => (form.id ? "编辑武器" : "新建武器"));
 const { isDirty: hasUnsavedChanges, captureSnapshot } = useDirtyForm(
   form,
@@ -150,7 +150,7 @@ async function saveWeapon() {
   errorMessage.value = "";
 
   try {
-    await adminWeaponsApi.saveWeapon(buildWeaponSavePayload(form));
+    await adminWeaponsApi.saveWeapon(form.id, buildWeaponSavePayload(form));
     await loadWeapons();
     message.success("武器已保存。");
     closeEditor();

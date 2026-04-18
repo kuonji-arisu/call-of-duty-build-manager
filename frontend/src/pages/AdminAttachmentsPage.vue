@@ -41,7 +41,6 @@ const dialog = useDialog();
 const message = useMessage();
 const saving = ref(false);
 const deletingId = ref("");
-const editorVisible = ref(false);
 const errorMessage = ref("");
 const selectedFilterWeapon = ref<WeaponOption | null>(null);
 const filters = reactive({
@@ -83,6 +82,7 @@ const slotOptions = computed(() => toSelectOptions(getSlotOptions()));
 const adminPageSizes = [10, 20, 50, 100];
 
 const form = reactive<AttachmentFormState>(createEmptyAttachmentForm());
+const editorVisible = ref(false);
 const editorTitle = computed(() => (form.id ? "编辑配件" : "新建配件"));
 const { isDirty: hasUnsavedChanges, captureSnapshot } = useDirtyForm(
   form,
@@ -150,7 +150,7 @@ async function saveAttachment() {
   errorMessage.value = "";
 
   try {
-    await adminAttachmentsApi.saveAttachment(buildAttachmentSavePayload(form));
+    await adminAttachmentsApi.saveAttachment(form.id, buildAttachmentSavePayload(form));
     await loadAttachments();
     message.success("配件已保存。");
     closeEditor();

@@ -3,6 +3,7 @@ import { toQueryString } from "../query";
 import type { EffectDefinitionListQuery, OptionSearchQuery } from "../domainTypes";
 import type {
   AttachmentEffectDefinition,
+  AttachmentEffectDefinitionSavePayload,
   AttachmentEffectDefinitionOption,
   PageResult,
 } from "../../shared/types";
@@ -26,11 +27,17 @@ export const adminEffectDefinitionsApi = {
       undefined,
       { auth: true },
     ),
-  saveAttachmentEffectDefinition: (definition: AttachmentEffectDefinition) =>
-    request<AttachmentEffectDefinition>("/admin/attachment-effect-definitions", {
-      method: "POST",
-      body: JSON.stringify(definition),
-    }, { auth: true }),
+  saveAttachmentEffectDefinition: (definitionId: string, definition: AttachmentEffectDefinitionSavePayload) =>
+    request<AttachmentEffectDefinition>(
+      definitionId
+        ? `/admin/attachment-effect-definitions/${definitionId}`
+        : "/admin/attachment-effect-definitions",
+      {
+        method: definitionId ? "PUT" : "POST",
+        body: JSON.stringify(definition),
+      },
+      { auth: true },
+    ),
   deleteAttachmentEffectDefinition: (definitionId: string) =>
     request<void>(`/admin/attachment-effect-definitions/${definitionId}`, { method: "DELETE" }, { auth: true }),
 };

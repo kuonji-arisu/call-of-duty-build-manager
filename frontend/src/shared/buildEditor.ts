@@ -8,8 +8,6 @@ export interface BuildEditorFormState {
   notes: string;
   sortOrder: number;
   isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
   items: Partial<Record<Slot, string>>;
 }
 
@@ -22,8 +20,6 @@ export function createEmptyBuildEditorForm(preferredWeaponId = ""): BuildEditorF
     notes: "",
     sortOrder: 0,
     isFavorite: false,
-    createdAt: "",
-    updatedAt: "",
     items: {},
   };
 }

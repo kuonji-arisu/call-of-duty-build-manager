@@ -9,8 +9,6 @@ export interface WeaponFormState {
   slots: Slot[];
   sortOrder: number;
   isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export function createEmptyWeaponForm(): WeaponFormState {
@@ -23,17 +21,19 @@ export function createEmptyWeaponForm(): WeaponFormState {
     slots: ["optic", "muzzle", "underbarrel"],
     sortOrder: 0,
     isFavorite: false,
-    createdAt: "",
-    updatedAt: "",
   };
 }
 
 export function cloneWeaponToForm(weapon: Weapon): WeaponFormState {
   return {
-    ...weapon,
+    id: weapon.id,
+    name: weapon.name,
+    weaponType: weapon.weaponType,
     tags: [...weapon.tags],
     generations: [...weapon.generations],
     slots: [...weapon.slots],
+    sortOrder: weapon.sortOrder,
+    isFavorite: weapon.isFavorite,
   };
 }
 

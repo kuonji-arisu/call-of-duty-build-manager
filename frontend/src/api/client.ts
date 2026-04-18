@@ -8,6 +8,41 @@ interface RequestOptions {
   auth?: boolean;
 }
 
+interface ApiErrorBody {
+  message?: unknown;
+}
+
+function parseResponseBody(raw: string, contentType: string | null): unknown {
+  if (!raw) {
+    return null;
+  }
+
+  if (!contentType?.toLowerCase().includes("application/json")) {
+    return raw;
+  }
+
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return raw;
+  }
+}
+
+function errorMessageFromBody(data: unknown, response: Response) {
+  if (typeof data === "object" && data && "message" in data) {
+    const message = (data as ApiErrorBody).message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  }
+
+  if (typeof data === "string" && data.trim()) {
+    return data.trim();
+  }
+
+  return `${response.status} ${response.statusText}`;
+}
+
 export async function request<T>(
   path: string,
   init?: RequestInit,
@@ -24,7 +59,7 @@ export async function request<T>(
   });
 
   const raw = await response.text();
-  const data = raw ? (JSON.parse(raw) as unknown) : null;
+  const data = parseResponseBody(raw, response.headers.get("content-type"));
 
   if (!response.ok) {
     if (response.status === 401 && options.auth) {
@@ -36,11 +71,7 @@ export async function request<T>(
       });
     }
 
-    const message =
-      typeof data === "object" && data && "message" in data
-        ? String((data as { message?: unknown }).message)
-        : `${response.status} ${response.statusText}`;
-    throw new Error(message);
+    throw new Error(errorMessageFromBody(data, response));
   }
 
   return data as T;

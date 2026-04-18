@@ -16,6 +16,11 @@ export interface AttachmentEffectDefinition {
   updatedAt: string;
 }
 
+export interface AttachmentEffectDefinitionSavePayload {
+  label: string;
+  sortOrder: number;
+}
+
 export interface AttachmentEffectDefinitionOption {
   id: string;
   label: string;

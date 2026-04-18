@@ -12,9 +12,9 @@ export const adminAttachmentsApi = {
       undefined,
       { auth: true },
     ),
-  saveAttachment: (attachment: AttachmentSavePayload) =>
-    request<Attachment>("/admin/attachments", {
-      method: "POST",
+  saveAttachment: (attachmentId: string, attachment: AttachmentSavePayload) =>
+    request<Attachment>(attachmentId ? `/admin/attachments/${attachmentId}` : "/admin/attachments", {
+      method: attachmentId ? "PUT" : "POST",
       body: JSON.stringify(attachment),
     }, { auth: true }),
   deleteAttachment: (attachmentId: string) =>

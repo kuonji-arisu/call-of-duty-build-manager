@@ -15,15 +15,12 @@ export interface Build {
 }
 
 export interface BuildSavePayload {
-  id: string;
   weaponId: string;
   name: string;
   generations: Generation[];
   notes?: string | null;
   sortOrder: number;
   isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface BuildSummary extends Build {
@@ -40,10 +37,8 @@ export interface BuildItem {
 }
 
 export interface BuildItemSavePayload {
-  id: string;
   slot: Slot;
   attachmentId: string;
-  createdAt: string;
 }
 
 export interface RecommendedBuildSavePayload extends BuildSavePayload {

@@ -22,7 +22,6 @@ export interface Attachment {
 }
 
 export interface AttachmentSavePayload {
-  id: string;
   name: string;
   subtitle: string;
   slot: Slot;
@@ -30,6 +29,4 @@ export interface AttachmentSavePayload {
   tags: AttachmentTag[];
   effects: AttachmentEffect[];
   sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
 }

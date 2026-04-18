@@ -50,6 +50,17 @@
     </where>
   </select>
 
+  <select id="findById" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
+    SELECT
+      id,
+      label,
+      sort_order AS sortOrder,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM attachment_effect_definitions
+    WHERE id = #{id}
+  </select>
+
   <select id="countById" resultType="int">
     SELECT COUNT(*) FROM attachment_effect_definitions WHERE id = #{id}
   </select>

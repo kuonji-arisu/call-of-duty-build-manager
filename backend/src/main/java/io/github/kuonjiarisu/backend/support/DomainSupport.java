@@ -1,6 +1,5 @@
 package io.github.kuonjiarisu.backend.support;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +42,4 @@ public final class DomainSupport {
         return StringUtils.hasText(id) ? id.trim() : UUID.randomUUID().toString();
     }
 
-    public static LocalDateTime keepOrNow(LocalDateTime value) {
-        return value == null ? LocalDateTime.now() : value;
-    }
 }

@@ -18,8 +18,6 @@ export interface AttachmentFormState {
   tags: AttachmentTag[];
   effects: AttachmentEffectRowState[];
   sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export function createEmptyEffectRow(): AttachmentEffectRowState {
@@ -42,8 +40,6 @@ export function createEmptyAttachmentForm(): AttachmentFormState {
     tags: [],
     effects: [],
     sortOrder: 0,
-    createdAt: "",
-    updatedAt: "",
   };
 }
 
@@ -63,8 +59,6 @@ export function cloneAttachmentToForm(attachment: Attachment): AttachmentFormSta
       level: effect.level,
     })),
     sortOrder: attachment.sortOrder,
-    createdAt: attachment.createdAt,
-    updatedAt: attachment.updatedAt,
   };
 }
 

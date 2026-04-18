@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,8 +50,13 @@ public class WeaponController {
     }
 
     @PostMapping
-    public Weapon save(@RequestBody WeaponSaveRequest request) {
-        return weaponService.save(request.toCommand());
+    public Weapon create(@RequestBody WeaponSaveRequest request) {
+        return weaponService.create(request.toCommand());
+    }
+
+    @PutMapping("/{id}")
+    public Weapon update(@PathVariable String id, @RequestBody WeaponSaveRequest request) {
+        return weaponService.update(id, request.toCommand());
     }
 
     @DeleteMapping("/{id}")

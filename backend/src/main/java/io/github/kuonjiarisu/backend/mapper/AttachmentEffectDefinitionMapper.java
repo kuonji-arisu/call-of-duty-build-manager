@@ -23,6 +23,8 @@ public interface AttachmentEffectDefinitionMapper {
 
     long countPage(@Param("keyword") String keyword);
 
+    AttachmentEffectDefinition findById(@Param("id") String id);
+
     int countById(@Param("id") String id);
 
     int countEffectsByDefinitionId(@Param("definitionId") String definitionId);

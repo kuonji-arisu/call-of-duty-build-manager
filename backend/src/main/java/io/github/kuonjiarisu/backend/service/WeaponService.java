@@ -134,9 +134,25 @@ public class WeaponService {
     }
 
     @Transactional
-    public Weapon save(WeaponSaveCommand command) {
+    public Weapon create(WeaponSaveCommand command) {
+        return save(null, command);
+    }
+
+    @Transactional
+    public Weapon update(String id, WeaponSaveCommand command) {
+        var weaponId = DomainSupport.requireText(id, "武器 ID");
+        if (weaponMapper.countById(weaponId) == 0) {
+            throw new IllegalArgumentException("武器不存在");
+        }
+        return save(weaponId, command);
+    }
+
+    private Weapon save(String requestedId, WeaponSaveCommand command) {
+        var id = DomainSupport.keepOrGenerateId(requestedId, "weapon");
+        var currentRow = weaponMapper.findRowById(id);
+        var now = LocalDateTime.now();
         var normalized = new Weapon(
-            DomainSupport.keepOrGenerateId(command.id(), "weapon"),
+            id,
             DomainSupport.requireText(command.name(), "武器名称"),
             DomainSupport.requireText(command.weaponType(), "武器分类"),
             DomainSupport.normalizeList(command.tags()),
@@ -144,10 +160,10 @@ public class WeaponService {
             DomainSupport.requireList(command.slots(), "武器槽位"),
             command.sortOrder() == null ? 0 : command.sortOrder(),
             Boolean.TRUE.equals(command.isFavorite()),
-            DomainSupport.keepOrNow(command.createdAt()),
-            LocalDateTime.now()
+            currentRow == null ? now : currentRow.createdAt(),
+            now
         );
-        var existed = weaponMapper.countById(normalized.id()) > 0;
+        var existed = currentRow != null;
         validateReferenceSafeUpdate(normalized);
         weaponMapper.upsertRow(new WeaponRow(
             normalized.id(),

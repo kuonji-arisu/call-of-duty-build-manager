@@ -8,9 +8,9 @@ export const adminBuildsApi = {
     request<PageResult<BuildSummary>>(`/admin/builds${toQueryString(query)}`, undefined, { auth: true }),
   getBuildDetail: (buildId: string) =>
     request<BuildDetail>(`/admin/builds/${buildId}`, undefined, { auth: true }),
-  saveBuild: (build: RecommendedBuildSavePayload) =>
-    request<Build>("/admin/builds", {
-      method: "POST",
+  saveBuild: (buildId: string, build: RecommendedBuildSavePayload) =>
+    request<Build>(buildId ? `/admin/builds/${buildId}` : "/admin/builds", {
+      method: buildId ? "PUT" : "POST",
       body: JSON.stringify(build),
     }, { auth: true }),
   deleteBuild: (buildId: string) =>

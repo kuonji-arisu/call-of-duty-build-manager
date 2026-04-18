@@ -12,22 +12,20 @@ import PaginationFooter from "../../components/common/PaginationFooter.vue";
 import ResultSummary from "../../components/common/ResultSummary.vue";
 import { publicAttachmentsApi } from "../../api/public/attachments";
 import { publicWeaponsApi } from "../../api/public/weapons";
-import { useBuildGenerationGuard } from "../../composables/builds/useBuildGenerationGuard";
+import {
+  buildFormFromBuild,
+  useBuildEditorSession,
+} from "../../composables/builds/useBuildEditorSession";
 import { useLatestRequest } from "../../composables/useLatestRequest";
-import { useDirtyForm } from "../../composables/useDirtyForm";
-import { createEmptyBuildEditorForm, type BuildEditorFormState } from "../../shared/buildEditor";
-import { createBuildFormSnapshot } from "../../shared/builds/buildForm";
-import { buildBuildItemPayload, buildBuildSavePayload } from "../../shared/builds/buildItemPayload";
+import { buildLocalBuildItemRecords, buildLocalBuildRecord } from "../../shared/builds/buildItemPayload";
 import { toSelectOptions } from "../../shared/utils/naive";
 import { getGenerationOptions } from "../../shared/utils/labels";
+import { toWeaponOption } from "../../shared/weapons/weaponOption";
 import type {
   AttachmentOption,
   Build,
-  BuildItem,
-  Generation,
   GenerationFilter,
   Slot,
-  Weapon,
   WeaponOption,
 } from "../../shared/types";
 import { useBuildsStore } from "../../stores/builds";
@@ -41,13 +39,9 @@ const buildsStore = useBuildsStore();
 buildsStore.initialize();
 const { builds } = storeToRefs(buildsStore);
 
-const selectedFormWeapon = ref<WeaponOption | null>(null);
 const selectedFilterWeapon = ref<WeaponOption | null>(null);
-const selectedAttachmentsBySlot = ref<Partial<Record<Slot, AttachmentOption>>>({});
 const preferredWeapon = ref<WeaponOption | null>(null);
 const weaponCache = ref<Record<string, WeaponOption>>({});
-const currentItems = ref<BuildItem[]>([]);
-const editorVisible = ref(false);
 const saving = ref(false);
 const deletingId = ref("");
 const loadingWeapons = ref(false);
@@ -71,20 +65,28 @@ const favoriteOptions = [
 ];
 const userPageSizes = [10, 20, 50, 100];
 
-const form = reactive<BuildEditorFormState>(createEmptyBuildEditorForm());
-const editorTitle = computed(() => (form.id ? "编辑本地配装" : "新建本地配装"));
-const { isDirty: hasUnsavedChanges, captureSnapshot } = useDirtyForm(
+const {
   form,
-  editorVisible,
-  createBuildFormSnapshot,
-);
-const { captureGenerationSnapshot } = useBuildGenerationGuard({
-  form,
-  editorVisible,
-  selectedAttachmentsBySlot,
+  currentBuild,
   currentItems,
+  selectedFormWeapon,
+  selectedAttachmentsBySlot,
+  editorVisible,
+  resetForm,
+  openCreate: openBuildEditorCreate,
+  closeEditor: closeBuildEditor,
+  requestCloseEditor: requestCloseBuildEditor,
+  handleFormWeaponUpdate: updateBuildEditorWeapon,
+  updateSlotAttachmentId,
+  updateSlotAttachment,
+  validateSelectedAttachments,
+} = useBuildEditorSession({
   dialog,
+  saving,
+  errorMessage,
+  closeWarningTitle: "放弃未保存修改？",
 });
+const editorTitle = computed(() => (form.id ? "编辑本地配装" : "新建本地配装"));
 const selectedWeaponMap = computed(() => new Map(Object.entries(weaponCache.value)));
 const itemCountByBuildId = computed(() => {
   const counts = new Map<string, number>();
@@ -115,15 +117,6 @@ const filteredBuilds = computed(() => {
 const pagedBuilds = computed(() =>
   filteredBuilds.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value),
 );
-function toWeaponOption(weapon: Weapon): WeaponOption {
-  return {
-    id: weapon.id,
-    name: weapon.name,
-    weaponType: weapon.weaponType,
-    generations: weapon.generations,
-    slots: weapon.slots,
-  };
-}
 
 function cacheWeapon(weapon: WeaponOption) {
   weaponCache.value = {
@@ -164,51 +157,12 @@ async function loadAttachmentOptions(ids: string[]) {
   return new Map(options.map((option) => [option.id, option]));
 }
 
-function resetForm(
-  nextForm: BuildEditorFormState,
-  weapon: WeaponOption | null,
-  attachments: Partial<Record<Slot, AttachmentOption>> = {},
-  items: BuildItem[] = [],
-) {
-  Object.assign(form, nextForm);
-  form.generations = [...nextForm.generations];
-  form.items = { ...nextForm.items };
-  selectedFormWeapon.value = weapon;
-  selectedAttachmentsBySlot.value = { ...attachments };
-  currentItems.value = [...items];
-  captureSnapshot();
-  captureGenerationSnapshot();
-  errorMessage.value = "";
-}
-
-function createBuildFormForWeapon(weapon: WeaponOption | null) {
-  const nextForm = createEmptyBuildEditorForm(weapon?.id ?? "");
-  if (weapon) {
-    nextForm.generations = defaultGenerationsForWeapon(weapon, nextForm.generations);
-  }
-  return nextForm;
-}
-
-function defaultGenerationsForWeapon(weapon: WeaponOption, currentGenerations: Generation[]) {
-  const allowed = new Set(weapon.generations);
-  const nextGenerations = currentGenerations.filter((generation) => allowed.has(generation));
-  return (nextGenerations.length ? nextGenerations : weapon.generations.slice(0, 1)) as Generation[];
-}
-
-function normalizeFormGenerationsForWeapon(weapon: WeaponOption | null) {
-  if (!weapon) {
-    return;
-  }
-  form.generations = defaultGenerationsForWeapon(weapon, form.generations);
-}
-
 async function openCreate() {
   const weapon = selectedFilterWeapon.value ?? preferredWeapon.value;
   if (weapon) {
     cacheWeapon(weapon);
   }
-  resetForm(createBuildFormForWeapon(weapon), weapon);
-  editorVisible.value = true;
+  openBuildEditorCreate(weapon);
 }
 
 async function openEdit(build: Build) {
@@ -231,12 +185,12 @@ async function openEdit(build: Build) {
     if (!request.isLatest()) {
       return;
     }
-    resetForm({
-      ...build,
-      notes: build.notes ?? "",
-      generations: [...build.generations],
-      items: selectedItems,
-    }, weapon, selectedAttachments, items);
+    resetForm(buildFormFromBuild(build, selectedItems), {
+      weapon,
+      attachments: selectedAttachments,
+      items,
+      build,
+    });
     editorVisible.value = true;
   } catch (error) {
     if (request.isLatest()) {
@@ -246,34 +200,15 @@ async function openEdit(build: Build) {
 }
 
 function closeEditor() {
-  editorVisible.value = false;
-  resetForm(createBuildFormForWeapon(preferredWeapon.value), preferredWeapon.value);
+  closeBuildEditor(preferredWeapon.value);
 }
 
 function requestCloseEditor() {
-  if (saving.value) {
-    return;
-  }
-  if (!hasUnsavedChanges.value) {
-    closeEditor();
-    return;
-  }
-
-  dialog.warning({
-    title: "放弃未保存修改？",
-    content: "关闭后，当前表单里的修改不会保留。",
-    positiveText: "放弃修改",
-    negativeText: "继续编辑",
-    onPositiveClick: closeEditor,
-  });
+  requestCloseBuildEditor(preferredWeapon.value);
 }
 
 function handleFormWeaponUpdate(weapon: WeaponOption | null) {
-  selectedFormWeapon.value = weapon;
-  normalizeFormGenerationsForWeapon(weapon);
-  form.items = {};
-  selectedAttachmentsBySlot.value = {};
-  currentItems.value = [];
+  updateBuildEditorWeapon(weapon);
   if (weapon) {
     cacheWeapon(weapon);
   }
@@ -283,24 +218,6 @@ function handleFilterWeaponUpdate(weapon: WeaponOption | null) {
   selectedFilterWeapon.value = weapon;
   if (weapon) {
     cacheWeapon(weapon);
-  }
-}
-
-function updateSlotAttachmentId(slot: Slot, attachmentId: string) {
-  form.items[slot] = attachmentId;
-}
-
-function updateSlotAttachment(slot: Slot, attachment: AttachmentOption | null) {
-  selectedAttachmentsBySlot.value = {
-    ...selectedAttachmentsBySlot.value,
-    [slot]: attachment ?? undefined,
-  };
-}
-
-function validateSelectedAttachments(items: { slot: Slot; attachmentId: string }[]) {
-  const missingSlot = items.find((item) => selectedAttachmentsBySlot.value[item.slot]?.id !== item.attachmentId)?.slot;
-  if (missingSlot) {
-    throw new Error("请重新搜索并选择槽位配件");
   }
 }
 
@@ -350,21 +267,21 @@ async function saveBuild() {
   errorMessage.value = "";
 
   try {
-    const buildPayload = buildBuildSavePayload(form);
-    const weaponId = buildPayload.weaponId;
+    const buildRecord = buildLocalBuildRecord(form, currentBuild.value);
+    const weaponId = buildRecord.weaponId;
     const weapon = selectedFormWeapon.value;
     if (!weapon || weapon.id !== weaponId) {
       throw new Error("请重新搜索并选择所属武器");
     }
-    const invalidGeneration = buildPayload.generations.find((generation) => !weapon.generations.includes(generation));
+    const invalidGeneration = buildRecord.generations.find((generation) => !weapon.generations.includes(generation));
     if (invalidGeneration) {
       throw new Error("配装代际必须属于所属武器");
     }
-    const buildItems = buildBuildItemPayload(buildPayload.id, form, weapon, currentItems.value);
+    const buildItems = buildLocalBuildItemRecords(buildRecord.id, form, weapon, currentItems.value);
     validateSelectedAttachments(buildItems);
 
     await buildsStore.saveBuildWithItems(
-      buildPayload,
+      buildRecord,
       buildItems,
     );
     cacheWeapon(weapon);
