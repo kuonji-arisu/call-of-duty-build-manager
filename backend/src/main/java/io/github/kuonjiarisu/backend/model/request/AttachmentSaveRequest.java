@@ -2,7 +2,6 @@ package io.github.kuonjiarisu.backend.model.request;
 
 import java.util.List;
 
-import io.github.kuonjiarisu.backend.model.AttachmentEffect;
 import io.github.kuonjiarisu.backend.model.command.AttachmentSaveCommand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -22,7 +21,7 @@ public record AttachmentSaveRequest(
     @NotNull(message = "配件标签不能为空")
     List<String> tags,
     @NotNull(message = "配件效果不能为空")
-    List<@Valid AttachmentEffect> effects,
+    List<@Valid AttachmentEffectSaveRequest> effects,
     @Min(value = 0, message = "排序不能小于 0")
     Integer sortOrder
 ) {
@@ -33,7 +32,7 @@ public record AttachmentSaveRequest(
             slot,
             generations,
             tags,
-            effects,
+            effects == null ? null : effects.stream().map(AttachmentEffectSaveRequest::toCommand).toList(),
             sortOrder
         );
     }

@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.kuonjiarisu.backend.mapper.AttachmentMapper;
 import io.github.kuonjiarisu.backend.model.Attachment;
+import io.github.kuonjiarisu.backend.model.AttachmentEffect;
 import io.github.kuonjiarisu.backend.model.AttachmentRow;
 import io.github.kuonjiarisu.backend.model.OwnedStringValue;
+import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 import io.github.kuonjiarisu.backend.model.command.AttachmentSaveCommand;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
@@ -63,6 +65,7 @@ public class AttachmentCommandService {
         var id = DomainSupport.keepOrGenerateId(requestedId, "attachment");
         var currentRow = attachmentMapper.findRowById(id);
         var now = LocalDateTime.now();
+        var normalizedEffects = attachmentEffectNormalizer.normalize(command.effects());
         var normalized = new Attachment(
             id,
             DomainSupport.requireText(command.name(), "配件名称"),
@@ -71,7 +74,7 @@ public class AttachmentCommandService {
             currentWeaponIds(id),
             DomainSupport.requireList(command.generations(), "配件代际"),
             DomainSupport.normalizeList(command.tags()),
-            attachmentEffectNormalizer.normalize(command.effects()),
+            toReadEffects(normalizedEffects),
             command.sortOrder() == null ? 0 : command.sortOrder(),
             currentRow == null ? now : currentRow.createdAt(),
             now
@@ -79,7 +82,7 @@ public class AttachmentCommandService {
         var existed = currentRow != null;
 
         attachmentValidationService.validateExistingBindings(normalized.slot(), normalized.weaponIds());
-        attachmentValidationService.validateEffectDefinitions(normalized.effects());
+        attachmentValidationService.validateEffectDefinitions(normalizedEffects);
         attachmentValidationService.validateExistingBuildItemUsages(normalized);
 
         attachmentMapper.upsertRow(new AttachmentRow(
@@ -97,8 +100,8 @@ public class AttachmentCommandService {
         if (!normalized.generations().isEmpty()) {
             attachmentMapper.insertGenerations(normalized.id(), normalized.generations());
         }
-        if (!normalized.effects().isEmpty()) {
-            attachmentMapper.insertEffects(normalized.id(), normalized.effects());
+        if (!normalizedEffects.isEmpty()) {
+            attachmentMapper.insertEffects(normalized.id(), normalizedEffects);
         }
         log.info(
             "Saved attachment: attachmentId={} operation={} slot={} generationCount={} effectCount={}",
@@ -106,7 +109,7 @@ public class AttachmentCommandService {
             existed ? "update" : "create",
             normalized.slot(),
             normalized.generations().size(),
-            normalized.effects().size()
+            normalizedEffects.size()
         );
         return normalized;
     }
@@ -134,6 +137,12 @@ public class AttachmentCommandService {
         return attachmentMapper.findWeaponIdsByAttachmentIds(List.of(attachmentId)).stream()
             .map(OwnedStringValue::value)
             .distinct()
+            .toList();
+    }
+
+    private List<AttachmentEffect> toReadEffects(List<AttachmentEffectSaveCommand> effects) {
+        return effects.stream()
+            .map(effect -> new AttachmentEffect(effect.definitionId(), effect.effectType(), effect.level(), null, null))
             .toList();
     }
 }

@@ -4,24 +4,22 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import io.github.kuonjiarisu.backend.model.AttachmentEffect;
+import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 
 @Component
 public class AttachmentEffectNormalizer {
 
-    public List<AttachmentEffect> normalize(List<AttachmentEffect> effects) {
+    public List<AttachmentEffectSaveCommand> normalize(List<AttachmentEffectSaveCommand> effects) {
         if (effects == null || effects.isEmpty()) {
             return List.of();
         }
 
         return effects.stream()
-            .map(effect -> new AttachmentEffect(
+            .map(effect -> new AttachmentEffectSaveCommand(
                 DomainSupport.requireText(effect.definitionId(), "属性词条"),
                 requireEffectType(effect.effectType()),
-                requireEffectLevel(effect.level()),
-                null,
-                null
+                requireEffectLevel(effect.level())
             ))
             .distinct()
             .toList();

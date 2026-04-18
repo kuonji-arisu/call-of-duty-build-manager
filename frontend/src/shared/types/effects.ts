@@ -8,6 +8,12 @@ export interface AttachmentEffect {
   sortOrder?: number | null;
 }
 
+export interface AttachmentEffectSavePayload {
+  definitionId: string;
+  effectType: AttachmentEffectType;
+  level: 1 | 2 | 3 | 4;
+}
+
 export interface AttachmentEffectDefinition {
   id: string;
   label: string;

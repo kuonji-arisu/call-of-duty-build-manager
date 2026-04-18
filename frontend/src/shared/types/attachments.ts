@@ -1,5 +1,5 @@
 import type { AttachmentTag, Generation, Slot } from "./common";
-import type { AttachmentEffect } from "./effects";
+import type { AttachmentEffect, AttachmentEffectSavePayload } from "./effects";
 
 export interface AttachmentOption {
   id: string;
@@ -27,6 +27,6 @@ export interface AttachmentSavePayload {
   slot: Slot;
   generations: Generation[];
   tags: AttachmentTag[];
-  effects: AttachmentEffect[];
+  effects: AttachmentEffectSavePayload[];
   sortOrder: number;
 }

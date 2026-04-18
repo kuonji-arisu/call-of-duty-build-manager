@@ -5,10 +5,10 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.github.kuonjiarisu.backend.model.AttachmentEffect;
 import io.github.kuonjiarisu.backend.model.AttachmentEffectRow;
 import io.github.kuonjiarisu.backend.model.AttachmentRow;
 import io.github.kuonjiarisu.backend.model.OwnedStringValue;
+import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 
 @Mapper
 public interface AttachmentMapper {
@@ -136,7 +136,10 @@ public interface AttachmentMapper {
 
     void insertGenerations(@Param("attachmentId") String attachmentId, @Param("values") List<String> values);
 
-    void insertEffects(@Param("attachmentId") String attachmentId, @Param("effects") List<AttachmentEffect> effects);
+    void insertEffects(
+        @Param("attachmentId") String attachmentId,
+        @Param("effects") List<AttachmentEffectSaveCommand> effects
+    );
 
     int deleteById(@Param("id") String id);
 }

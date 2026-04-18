@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import io.github.kuonjiarisu.backend.mapper.AttachmentMapper;
 import io.github.kuonjiarisu.backend.mapper.BuildMapper;
 import io.github.kuonjiarisu.backend.model.Attachment;
-import io.github.kuonjiarisu.backend.model.AttachmentEffect;
 import io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition;
 import io.github.kuonjiarisu.backend.model.BuildItem;
 import io.github.kuonjiarisu.backend.model.BuildRow;
 import io.github.kuonjiarisu.backend.model.OwnedStringValue;
 import io.github.kuonjiarisu.backend.model.Weapon;
+import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 import io.github.kuonjiarisu.backend.service.AttachmentEffectDefinitionService;
 import io.github.kuonjiarisu.backend.service.WeaponService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
@@ -65,7 +65,7 @@ public class AttachmentValidationService {
         }
     }
 
-    public void validateEffectDefinitions(List<AttachmentEffect> effects) {
+    public void validateEffectDefinitions(List<AttachmentEffectSaveCommand> effects) {
         if (effects.isEmpty()) {
             return;
         }

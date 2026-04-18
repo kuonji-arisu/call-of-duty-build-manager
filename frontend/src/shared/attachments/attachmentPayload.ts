@@ -1,8 +1,8 @@
 import { requireSelection, requireText } from "../utils/validation";
-import type { AttachmentEffect, AttachmentSavePayload, Generation } from "../types";
+import type { AttachmentEffectSavePayload, AttachmentSavePayload, Generation } from "../types";
 import type { AttachmentEffectRowState, AttachmentFormState } from "./attachmentForm";
 
-export function normalizeAttachmentEffectRows(rows: AttachmentEffectRowState[]): AttachmentEffect[] {
+export function normalizeAttachmentEffectRows(rows: AttachmentEffectRowState[]): AttachmentEffectSavePayload[] {
   return rows
     .filter((row) => row.definitionId)
     .map((row) => ({
