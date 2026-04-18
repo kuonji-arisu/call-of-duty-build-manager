@@ -82,7 +82,7 @@ export function useBuildEditorSession({
     currentBuild.value = options.build ?? null;
     currentItems.value = [...(options.items ?? [])];
     selectedFormWeapon.value = options.weapon ?? null;
-    selectedAttachmentsBySlot.value = { ...(options.attachments ?? {}) };
+    selectedAttachmentsBySlot.value = { ...options.attachments };
     captureSnapshot();
     captureGenerationSnapshot();
     errorMessage.value = "";
