@@ -44,13 +44,17 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException exception, HttpServletRequest request) {
+        var message = exception.getBindingResult().getFieldErrors().stream()
+            .map(error -> error.getDefaultMessage() == null ? error.getField() + " 参数不合法" : error.getDefaultMessage())
+            .findFirst()
+            .orElse("请求参数不合法");
         log.warn(
             "Request validation failed: method={} path={} reason={}",
             request.getMethod(),
             request.getRequestURI(),
-            exception.getMessage()
+            message
         );
-        return build(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return build(HttpStatus.BAD_REQUEST, message);
     }
 
     @ExceptionHandler(AuthenticationException.class)

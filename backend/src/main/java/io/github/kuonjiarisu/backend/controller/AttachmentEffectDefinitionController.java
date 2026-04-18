@@ -16,6 +16,7 @@ import io.github.kuonjiarisu.backend.model.AttachmentEffectDefinitionOption;
 import io.github.kuonjiarisu.backend.model.PageResult;
 import io.github.kuonjiarisu.backend.model.request.AttachmentEffectDefinitionSaveRequest;
 import io.github.kuonjiarisu.backend.service.AttachmentEffectDefinitionService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/attachment-effect-definitions")
@@ -47,12 +48,15 @@ public class AttachmentEffectDefinitionController {
     }
 
     @PostMapping
-    public AttachmentEffectDefinition create(@RequestBody AttachmentEffectDefinitionSaveRequest request) {
+    public AttachmentEffectDefinition create(@Valid @RequestBody AttachmentEffectDefinitionSaveRequest request) {
         return attachmentEffectDefinitionService.create(request.toCommand());
     }
 
     @PutMapping("/{id}")
-    public AttachmentEffectDefinition update(@PathVariable String id, @RequestBody AttachmentEffectDefinitionSaveRequest request) {
+    public AttachmentEffectDefinition update(
+        @PathVariable String id,
+        @Valid @RequestBody AttachmentEffectDefinitionSaveRequest request
+    ) {
         return attachmentEffectDefinitionService.update(id, request.toCommand());
     }
 

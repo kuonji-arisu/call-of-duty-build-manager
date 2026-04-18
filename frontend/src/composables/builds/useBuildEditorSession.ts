@@ -1,11 +1,10 @@
 import { reactive, ref, type Ref } from "vue";
-import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
 
 import { createBuildFormSnapshot } from "../../shared/builds/buildForm";
 import { createEmptyBuildEditorForm, type BuildEditorFormState } from "../../shared/buildEditor";
 import type { AttachmentOption, Build, BuildItem, Generation, Slot, WeaponOption } from "../../shared/types";
 import { useDirtyForm } from "../useDirtyForm";
-import { useBuildGenerationGuard } from "./useBuildGenerationGuard";
+import { useBuildGenerationGuard, type DialogWarningApi } from "./useBuildGenerationGuard";
 
 interface ResetBuildEditorOptions {
   weapon?: WeaponOption | null;
@@ -15,7 +14,7 @@ interface ResetBuildEditorOptions {
 }
 
 interface UseBuildEditorSessionOptions {
-  dialog: Pick<DialogApiInjection, "warning">;
+  dialog: DialogWarningApi;
   saving: Ref<boolean>;
   errorMessage: Ref<string>;
   closeWarningTitle: string;

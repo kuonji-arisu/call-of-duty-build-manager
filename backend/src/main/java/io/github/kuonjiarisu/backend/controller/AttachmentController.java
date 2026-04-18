@@ -18,6 +18,7 @@ import io.github.kuonjiarisu.backend.model.PageResult;
 import io.github.kuonjiarisu.backend.model.request.AttachmentSaveRequest;
 import io.github.kuonjiarisu.backend.service.attachment.AttachmentCommandService;
 import io.github.kuonjiarisu.backend.service.attachment.AttachmentQueryService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/attachments")
@@ -60,12 +61,12 @@ public class AttachmentController {
     }
 
     @PostMapping
-    public Attachment create(@RequestBody AttachmentSaveRequest request) {
+    public Attachment create(@Valid @RequestBody AttachmentSaveRequest request) {
         return attachmentCommandService.create(request.toCommand());
     }
 
     @PutMapping("/{id}")
-    public Attachment update(@PathVariable String id, @RequestBody AttachmentSaveRequest request) {
+    public Attachment update(@PathVariable String id, @Valid @RequestBody AttachmentSaveRequest request) {
         return attachmentCommandService.update(id, request.toCommand());
     }
 

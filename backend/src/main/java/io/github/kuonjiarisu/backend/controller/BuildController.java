@@ -16,6 +16,7 @@ import io.github.kuonjiarisu.backend.model.PageResult;
 import io.github.kuonjiarisu.backend.model.request.BuildSaveRequest;
 import io.github.kuonjiarisu.backend.service.build.BuildCommandService;
 import io.github.kuonjiarisu.backend.service.build.BuildQueryService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/builds")
@@ -47,12 +48,12 @@ public class BuildController {
     }
 
     @PostMapping
-    public Build createBuild(@RequestBody BuildSaveRequest request) {
+    public Build createBuild(@Valid @RequestBody BuildSaveRequest request) {
         return buildCommandService.create(request.toCommand());
     }
 
     @PutMapping("/{id}")
-    public Build updateBuild(@PathVariable String id, @RequestBody BuildSaveRequest request) {
+    public Build updateBuild(@PathVariable String id, @Valid @RequestBody BuildSaveRequest request) {
         return buildCommandService.update(id, request.toCommand());
     }
 

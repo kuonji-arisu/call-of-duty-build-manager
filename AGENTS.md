@@ -38,6 +38,7 @@ Strict policy for AI coding assistants working in this repository.
 - Keep `/api/public/**` and `/api/admin/**` semantics separate.
 - Write APIs should normally follow `request -> command -> command service`.
 - Admin create requests must not include `id`, `createdAt`, or `updatedAt`; update requests should take identity from the URL path and keep request bodies to business fields.
+- Write request DTOs should use Bean Validation for basic request-shape checks; command services still own business validation and normalization.
 - Do not use Row objects or complex domain models directly as write requests.
 - Aggregate saves should normally be one API call and one transaction.
 - Do not split common save flows into multiple calls that can leave partial state.
@@ -51,6 +52,7 @@ Strict policy for AI coding assistants working in this repository.
 ## Frontend Rules
 
 - Import APIs by domain module under `admin` or `public`.
+- Do not import UI library internal implementation paths; use public exports or tiny local interfaces for the exact surface needed.
 - Do not restore a large aggregate API object.
 - Pinia is for real client state: auth, app settings, generation context, and local builds.
 - Pinia is not a cache for server-paged business lists.
@@ -60,6 +62,7 @@ Strict policy for AI coding assistants working in this repository.
 - Parent pages own stable reactive edit forms.
 - Modals edit fields; they do not replace whole form objects.
 - Keep local builds, admin recommended builds, and public browsing as separate product flows.
+- Local build storage reads must normalize untrusted `localStorage` data, including invalid structure, duplicate ids, orphan items, and duplicate build-slot items.
 
 ## Maintainability Rules
 

@@ -1,15 +1,29 @@
 import { nextTick, ref, watch, type Ref } from "vue";
-import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
 
 import type { AttachmentOption, BuildItem, Generation, Slot } from "../../shared/types";
 import type { BuildEditorFormState } from "../../shared/buildEditor";
+
+interface DialogWarningOptions {
+  title: string;
+  content: string;
+  positiveText: string;
+  negativeText: string;
+  closable?: boolean;
+  maskClosable?: boolean;
+  onPositiveClick?: () => void;
+  onNegativeClick?: () => void;
+}
+
+export interface DialogWarningApi {
+  warning(options: DialogWarningOptions): unknown;
+}
 
 interface UseBuildGenerationGuardOptions {
   form: BuildEditorFormState;
   editorVisible: Ref<boolean>;
   selectedAttachmentsBySlot: Ref<Partial<Record<Slot, AttachmentOption>>>;
   currentItems: Ref<BuildItem[]>;
-  dialog: Pick<DialogApiInjection, "warning">;
+  dialog: DialogWarningApi;
 }
 
 export function useBuildGenerationGuard({

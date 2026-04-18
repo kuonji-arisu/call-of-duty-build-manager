@@ -16,6 +16,7 @@ import io.github.kuonjiarisu.backend.model.PageResult;
 import io.github.kuonjiarisu.backend.model.WeaponOption;
 import io.github.kuonjiarisu.backend.model.request.WeaponSaveRequest;
 import io.github.kuonjiarisu.backend.service.WeaponService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/weapons")
@@ -50,12 +51,12 @@ public class WeaponController {
     }
 
     @PostMapping
-    public Weapon create(@RequestBody WeaponSaveRequest request) {
+    public Weapon create(@Valid @RequestBody WeaponSaveRequest request) {
         return weaponService.create(request.toCommand());
     }
 
     @PutMapping("/{id}")
-    public Weapon update(@PathVariable String id, @RequestBody WeaponSaveRequest request) {
+    public Weapon update(@PathVariable String id, @Valid @RequestBody WeaponSaveRequest request) {
         return weaponService.update(id, request.toCommand());
     }
 

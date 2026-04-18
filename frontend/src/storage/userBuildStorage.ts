@@ -121,13 +121,19 @@ function normalizePersistedUserBuilds(value: unknown): PersistedUserBuilds {
 
   const buildIds = new Set(builds.map((build) => build.id));
   const seenItemIds = new Set<string>();
+  const seenBuildSlots = new Set<string>();
   const buildItems = (Array.isArray(value.buildItems) ? value.buildItems : [])
     .map((item) => normalizeBuildItem(item, buildIds))
     .filter((item): item is BuildItem => {
       if (!item || seenItemIds.has(item.id)) {
         return false;
       }
+      const buildSlotKey = `${item.buildId}:${item.slot}`;
+      if (seenBuildSlots.has(buildSlotKey)) {
+        return false;
+      }
       seenItemIds.add(item.id);
+      seenBuildSlots.add(buildSlotKey);
       return true;
     });
 
