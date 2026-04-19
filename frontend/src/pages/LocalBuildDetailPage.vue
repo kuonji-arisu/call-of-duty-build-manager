@@ -56,7 +56,9 @@ async function loadLocalDetail(id: string): Promise<BuildDetail> {
   }
 
   const weapon = await publicWeaponsApi.getWeapon(build.weaponId);
-  if (!weapon.generations.some((generation) => build.generations.includes(generation))) {
+  const hasValidGeneration = build.generations.length === 1
+    && build.generations.every((generation) => weapon.generations.includes(generation));
+  if (!hasValidGeneration) {
     throw new Error("配装代际与所属武器不匹配");
   }
 

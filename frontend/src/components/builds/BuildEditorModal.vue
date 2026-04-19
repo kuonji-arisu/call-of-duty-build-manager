@@ -4,8 +4,8 @@ import { computed } from "vue";
 
 import AttachmentRemoteSelect from "../attachments/AttachmentRemoteSelect.vue";
 import WeaponRemoteSelect from "../weapons/WeaponRemoteSelect.vue";
-import SelectionChips from "../common/SelectionChips.vue";
 import { getGenerationOptions, getSlotLabel } from "../../shared/utils/labels";
+import { toSelectOptions } from "../../shared/utils/naive";
 import type { BuildEditorFormState } from "../../shared/buildEditor";
 import type { AttachmentOption, Generation, Slot, WeaponOption } from "../../shared/types";
 
@@ -43,16 +43,16 @@ const emit = defineEmits<{
 const generationOptions = computed(() => {
   const options = getGenerationOptions();
   if (!props.selectedWeapon) {
-    return options;
+    return toSelectOptions(options);
   }
 
   const visibleGenerations = new Set([...props.selectedWeapon.generations, ...props.form.generations]);
-  return options.filter((option) => visibleGenerations.has(option.value));
+  return toSelectOptions(options.filter((option) => visibleGenerations.has(option.value)));
 });
 const slotEntries = computed(() => props.selectedWeapon?.slots.map((slot) => ({ slot })) ?? []);
 
-function updateGenerations(value: string[]) {
-  props.form.generations = value as Generation[];
+function updateGeneration(value: string | null) {
+  props.form.generations = value ? [value as Generation] : [];
 }
 </script>
 
@@ -108,10 +108,11 @@ function updateGenerations(value: string[]) {
             </n-checkbox>
           </n-form-item>
           <n-form-item class="md:col-span-2" label="代际">
-            <SelectionChips
-              :model-value="props.form.generations"
+            <n-select
+              :value="props.form.generations[0] ?? null"
               :options="generationOptions"
-              @update:model-value="updateGenerations"
+              placeholder="选择配装代际"
+              @update:value="updateGeneration"
             />
           </n-form-item>
           <n-form-item class="md:col-span-2" label="备注">

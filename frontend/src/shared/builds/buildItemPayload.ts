@@ -1,5 +1,5 @@
 import { createId, nowIso } from "../utils/records";
-import { requireSelection, requireText } from "../utils/validation";
+import { requireText } from "../utils/validation";
 import type {
   Build,
   BuildItem,
@@ -16,11 +16,18 @@ export function buildBuildSavePayload(form: BuildEditorFormState): BuildSavePayl
   return {
     weaponId: requireText(form.weaponId, "请选择所属武器"),
     name: requireText(form.name, "请输入配装名称"),
-    generations: requireSelection(form.generations, "至少选择一个代际") as Generation[],
+    generations: requireSingleGeneration(form.generations),
     notes: form.notes.trim() || null,
     sortOrder: Number.isNaN(form.sortOrder) ? 0 : form.sortOrder,
     isFavorite: form.isFavorite,
   };
+}
+
+function requireSingleGeneration(generations: Generation[]): Generation[] {
+  if (generations.length !== 1) {
+    throw new Error(generations.length ? "配装只能选择一个代际" : "请选择配装代际");
+  }
+  return [...generations];
 }
 
 export function buildLocalBuildRecord(

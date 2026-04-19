@@ -64,7 +64,7 @@ public class BuildCommandService {
             id,
             DomainSupport.requireText(command.weaponId(), "所属武器"),
             DomainSupport.requireText(command.name(), "配装名称"),
-            DomainSupport.requireList(command.generations(), "配装代际"),
+            requireSingleGeneration(command.generations()),
             command.notes() == null ? null : command.notes().trim(),
             command.sortOrder() == null ? 0 : command.sortOrder(),
             Boolean.TRUE.equals(command.isFavorite()),
@@ -111,6 +111,14 @@ public class BuildCommandService {
             normalizedItems.size()
         );
         return normalized;
+    }
+
+    private List<String> requireSingleGeneration(List<String> generations) {
+        var normalizedGenerations = DomainSupport.requireList(generations, "配装代际");
+        if (normalizedGenerations.size() != 1) {
+            throw new IllegalArgumentException("配装只能选择一个代际");
+        }
+        return normalizedGenerations;
     }
 
     @Transactional

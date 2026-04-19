@@ -30,6 +30,7 @@ Strict policy for AI coding assistants working in this repository.
 - Public browsing is anonymous and read-oriented.
 - Admin management is authenticated and maintenance-oriented.
 - Local builds live in browser `localStorage` and are not backend user data.
+- Weapons and attachments may span multiple generations; each build belongs to exactly one generation.
 - `/api/public/bootstrap` is only for lightweight initialization data such as `appInfo` and `settings`.
 - Do not put weapon, attachment, build, or build item lists into bootstrap.
 

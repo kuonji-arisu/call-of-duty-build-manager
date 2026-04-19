@@ -63,7 +63,7 @@ function normalizeBuild(value: unknown): Build | null {
   const weaponId = normalizedText(value.weaponId);
   const name = normalizedText(value.name);
   const generations = normalizedGenerations(value.generations);
-  if (!id || !weaponId || !name || !generations.length) {
+  if (!id || !weaponId || !name || generations.length !== 1) {
     return null;
   }
 

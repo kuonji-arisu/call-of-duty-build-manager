@@ -25,8 +25,8 @@ export function defaultGenerationsForWeapon(
   currentGenerations: Generation[],
 ): Generation[] {
   const allowed = new Set(weapon.generations);
-  const nextGenerations = currentGenerations.filter((generation) => allowed.has(generation));
-  return (nextGenerations.length ? nextGenerations : weapon.generations.slice(0, 1)) as Generation[];
+  const nextGeneration = currentGenerations.find((generation) => allowed.has(generation));
+  return (nextGeneration ? [nextGeneration] : weapon.generations.slice(0, 1)) as Generation[];
 }
 
 export function createBuildFormForWeapon(weapon: WeaponOption | null) {
