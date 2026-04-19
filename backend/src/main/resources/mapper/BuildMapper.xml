@@ -3,20 +3,6 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.BuildMapper">
-  <select id="findAllBuildRows" resultType="io.github.kuonjiarisu.backend.model.BuildRow">
-    SELECT
-      id,
-      weapon_id AS weaponId,
-      name,
-      notes,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
-    FROM builds
-    ORDER BY sort_order ASC, updated_at DESC, id ASC
-  </select>
-
   <sql id="buildFilters">
     <where>
       <if test="hideMissingWeapon">
@@ -93,10 +79,22 @@
     WHERE id = #{id}
   </select>
 
-  <select id="findAllGenerations" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT build_id AS ownerId, generation AS value
-    FROM build_generations
-    ORDER BY build_id ASC, generation ASC
+  <select id="findBuildRowsByIds" resultType="io.github.kuonjiarisu.backend.model.BuildRow">
+    SELECT
+      id,
+      weapon_id AS weaponId,
+      name,
+      notes,
+      sort_order AS sortOrder,
+      is_favorite AS isFavorite,
+      created_at AS createdAt,
+      updated_at AS updatedAt
+    FROM builds
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY sort_order ASC, updated_at DESC, id ASC
   </select>
 
   <select id="findGenerationsByBuildIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
@@ -109,7 +107,7 @@
     ORDER BY build_id ASC, generation ASC
   </select>
 
-  <select id="findAllBuildItems" resultType="io.github.kuonjiarisu.backend.model.BuildItem">
+  <select id="findBuildItemsByAttachmentId" resultType="io.github.kuonjiarisu.backend.model.BuildItem">
     SELECT
       item.id,
       item.build_id AS buildId,
@@ -121,6 +119,7 @@
     INNER JOIN weapon_slots weapon_slot
       ON weapon_slot.weapon_id = build.weapon_id
       AND weapon_slot.slot = item.slot
+    WHERE item.attachment_id = #{attachmentId}
     ORDER BY item.build_id ASC, weapon_slot.sort_order ASC, item.slot ASC
   </select>
 

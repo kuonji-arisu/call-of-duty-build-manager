@@ -15,17 +15,23 @@ import io.github.kuonjiarisu.backend.model.Weapon;
 import io.github.kuonjiarisu.backend.model.PageResult;
 import io.github.kuonjiarisu.backend.model.WeaponOption;
 import io.github.kuonjiarisu.backend.model.request.WeaponSaveRequest;
-import io.github.kuonjiarisu.backend.service.WeaponService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponCommandService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/weapons")
 public class WeaponController {
 
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
+    private final WeaponCommandService weaponCommandService;
 
-    public WeaponController(WeaponService weaponService) {
-        this.weaponService = weaponService;
+    public WeaponController(
+        WeaponQueryService weaponQueryService,
+        WeaponCommandService weaponCommandService
+    ) {
+        this.weaponQueryService = weaponQueryService;
+        this.weaponCommandService = weaponCommandService;
     }
 
     @GetMapping
@@ -37,31 +43,31 @@ public class WeaponController {
         String generation,
         Boolean favorite
     ) {
-        return weaponService.listPage(page, pageSize, keyword, weaponType, generation, favorite);
+        return weaponQueryService.listPage(page, pageSize, keyword, weaponType, generation, favorite);
     }
 
     @GetMapping("/options")
     public List<WeaponOption> listOptions() {
-        return weaponService.listOptions();
+        return weaponQueryService.listOptions();
     }
 
     @GetMapping("/search-options")
     public PageResult<WeaponOption> searchOptions(Integer page, Integer pageSize, String keyword) {
-        return weaponService.searchOptions(page, pageSize, keyword);
+        return weaponQueryService.searchOptions(page, pageSize, keyword);
     }
 
     @PostMapping
     public Weapon create(@Valid @RequestBody WeaponSaveRequest request) {
-        return weaponService.create(request.toCommand());
+        return weaponCommandService.create(request.toCommand());
     }
 
     @PutMapping("/{id}")
     public Weapon update(@PathVariable String id, @Valid @RequestBody WeaponSaveRequest request) {
-        return weaponService.update(id, request.toCommand());
+        return weaponCommandService.update(id, request.toCommand());
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
-        weaponService.delete(id);
+        weaponCommandService.delete(id);
     }
 }

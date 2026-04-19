@@ -41,3 +41,10 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.register('passwordHash', JavaExec) {
+    group = 'application'
+    description = 'Generate a BCrypt password hash for manual admin account creation.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.github.kuonjiarisu.backend.auth.tool.PasswordHashTool'
+}

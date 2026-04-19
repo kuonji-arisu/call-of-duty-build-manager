@@ -13,8 +13,6 @@ import io.github.kuonjiarisu.backend.model.OwnedStringValue;
 @Mapper
 public interface BuildMapper {
 
-    List<BuildRow> findAllBuildRows();
-
     List<BuildRow> findBuildRows(
         @Param("keyword") String keyword,
         @Param("weaponId") String weaponId,
@@ -35,11 +33,11 @@ public interface BuildMapper {
 
     BuildRow findBuildRowById(@Param("id") String id);
 
-    List<OwnedStringValue> findAllGenerations();
+    List<BuildRow> findBuildRowsByIds(@Param("ids") List<String> ids);
 
     List<OwnedStringValue> findGenerationsByBuildIds(@Param("ids") List<String> ids);
 
-    List<BuildItem> findAllBuildItems();
+    List<BuildItem> findBuildItemsByAttachmentId(@Param("attachmentId") String attachmentId);
 
     List<BuildItem> findBuildItemsByBuildId(@Param("buildId") String buildId);
 

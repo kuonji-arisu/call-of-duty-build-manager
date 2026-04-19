@@ -1,20 +1,11 @@
 spring:
   application:
     name: cod-build-manager-api
-  datasource:
-    url: ${APP_DATASOURCE_URL:jdbc:mysql://localhost:3306/cod_build_manager?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
-    username: ${APP_DATASOURCE_USERNAME:root}
-    password: ${APP_DATASOURCE_PASSWORD:123456}
+  profiles:
+    default: dev
   sql:
     init:
-      mode: always
-      schema-locations: classpath:schema.sql
-  data:
-    redis:
-      host: ${APP_REDIS_HOST:localhost}
-      port: ${APP_REDIS_PORT:6379}
-      password: ${APP_REDIS_PASSWORD:}
-      database: ${APP_REDIS_DATABASE:0}
+      mode: never
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -31,14 +22,6 @@ server:
       force: true
 
 app:
-  cors:
-    allowed-origins:
-      - ${APP_CORS_ORIGIN_LOCAL:http://localhost:5173}
-      - ${APP_CORS_ORIGIN_LOOPBACK:http://127.0.0.1:5173}
   auth:
-    jwt-secret: ${APP_AUTH_JWT_SECRET:cod-build-manager-change-this-secret-key-for-production-2026}
     access-token-ttl-minutes: ${APP_AUTH_ACCESS_TOKEN_TTL_MINUTES:120}
     captcha-ttl-minutes: ${APP_AUTH_CAPTCHA_TTL_MINUTES:5}
-    default-admin-username: ${APP_AUTH_DEFAULT_ADMIN_USERNAME:admin}
-    default-admin-password: ${APP_AUTH_DEFAULT_ADMIN_PASSWORD:Admin123456}
-    default-admin-display-name: ${APP_AUTH_DEFAULT_ADMIN_DISPLAY_NAME:System Admin}

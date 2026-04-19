@@ -303,12 +303,6 @@
     ORDER BY attachment_id ASC
   </select>
 
-  <select id="findAllGenerations" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT attachment_id AS ownerId, generation AS value
-    FROM attachment_generations
-    ORDER BY attachment_id ASC, generation ASC
-  </select>
-
   <select id="findGenerationsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
     SELECT attachment_id AS ownerId, generation AS value
     FROM attachment_generations

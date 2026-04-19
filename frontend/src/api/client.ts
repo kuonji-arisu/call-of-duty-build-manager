@@ -50,7 +50,10 @@ export async function request<T>(
 ): Promise<T> {
   const token = options.auth ? getAccessToken() : "";
   const headers = new Headers(init?.headers);
-  headers.set("Content-Type", "application/json");
+  const body = init?.body;
+  if (body !== undefined && body !== null && !headers.has("Content-Type") && !(body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }

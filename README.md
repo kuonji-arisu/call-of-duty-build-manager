@@ -84,6 +84,15 @@
 
 ### 启动后端
 
+应用不会在启动时自动建表。首次运行前先创建数据库，并手动执行表结构脚本：
+
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS cod_build_manager CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p cod_build_manager < backend/src/main/resources/schema.sql
+```
+
+Windows PowerShell 可在仓库根目录执行同样的 `mysql` 命令。
+
 ```bash
 cd backend
 ./gradlew bootRun
@@ -99,19 +108,65 @@ cd backend
 默认会连接本机 MySQL 和 Redis。必要时通过环境变量覆盖：
 
 ```bash
-APP_DATASOURCE_URL=jdbc:mysql://localhost:3306/cod_build_manager?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+APP_DATASOURCE_URL=jdbc:mysql://localhost:3306/cod_build_manager?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
 APP_DATASOURCE_USERNAME=root
 APP_DATASOURCE_PASSWORD=123456
 APP_REDIS_HOST=localhost
 APP_REDIS_PORT=6379
 ```
 
-本地默认后台账号来自后端配置：
+后端默认使用 `dev` profile。本地开发会使用 dev-only JWT secret；正式部署请使用 `prod` profile 并显式提供密钥、数据库、Redis 和 CORS 来源：
 
-- 用户名：`admin`
-- 密码：`Admin123456`
+```bash
+SPRING_PROFILES_ACTIVE=prod
+APP_DATASOURCE_URL=jdbc:mysql://localhost:3306/cod_build_manager?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+APP_DATASOURCE_USERNAME=cod_user
+APP_DATASOURCE_PASSWORD=change-this-password
+APP_REDIS_HOST=localhost
+APP_REDIS_PORT=6379
+APP_CORS_ALLOWED_ORIGINS=https://example.com
+APP_AUTH_JWT_SECRET=change-this-to-a-long-random-secret-at-least-32-chars
+```
 
-正式使用前请通过环境变量修改默认密码和 JWT secret。
+应用不会自动创建后台管理员。新部署需要先生成密码哈希：
+
+```bash
+cd backend
+./gradlew passwordHash --args "your-strong-password"
+```
+
+Windows PowerShell：
+
+```powershell
+cd backend
+.\gradlew.bat passwordHash --args "your-strong-password"
+```
+
+然后把输出的 BCrypt 哈希写入 `users` 表：
+
+```sql
+INSERT INTO users (
+  id,
+  username,
+  password_hash,
+  role,
+  display_name,
+  enabled,
+  last_login_at,
+  created_at,
+  updated_at
+) VALUES (
+  CONCAT('user_', REPLACE(UUID(), '-', '')),
+  'admin',
+  'replace-with-passwordHash-output',
+  'ADMIN',
+  '管理员',
+  TRUE,
+  NULL,
+  CURRENT_TIMESTAMP(6),
+  CURRENT_TIMESTAMP(6)
+);
+```
 
 ### 启动前端
 
@@ -154,7 +209,7 @@ cd backend
 
 ## 数据说明
 
-MySQL 是后台数据的主要来源。应用启动时会执行 `backend/src/main/resources/schema.sql`，用于创建必要表结构和基础设置。
+MySQL 是后台数据的主要来源。`backend/src/main/resources/schema.sql` 是手动初始化脚本，用于创建必要表结构和基础设置；应用启动时不会自动执行它。
 
 Redis 当前用于后台登录验证码。
 

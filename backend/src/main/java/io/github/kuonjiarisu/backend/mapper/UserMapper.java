@@ -12,8 +12,6 @@ public interface UserMapper {
 
     UserAccount findById(@Param("id") String id);
 
-    int countAll();
-
     void insert(UserAccount user);
 
     void updateLastLoginAt(@Param("id") String id, @Param("lastLoginAt") java.time.LocalDateTime lastLoginAt);

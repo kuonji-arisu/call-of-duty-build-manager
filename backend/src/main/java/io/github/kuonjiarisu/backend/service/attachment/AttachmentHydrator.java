@@ -17,7 +17,8 @@ import io.github.kuonjiarisu.backend.model.AttachmentEffectRow;
 import io.github.kuonjiarisu.backend.model.AttachmentRow;
 import io.github.kuonjiarisu.backend.model.OwnedStringValue;
 import io.github.kuonjiarisu.backend.service.AttachmentEffectDefinitionService;
-import io.github.kuonjiarisu.backend.service.WeaponService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
+import io.github.kuonjiarisu.backend.support.OwnedStringValueSupport;
 
 @Component
 public class AttachmentHydrator {
@@ -25,17 +26,17 @@ public class AttachmentHydrator {
     private static final Logger log = LoggerFactory.getLogger(AttachmentHydrator.class);
 
     private final AttachmentMapper attachmentMapper;
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final AttachmentEffectDefinitionService attachmentEffectDefinitionService;
     private final AttachmentAssembler attachmentAssembler;
     public AttachmentHydrator(
         AttachmentMapper attachmentMapper,
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         AttachmentEffectDefinitionService attachmentEffectDefinitionService,
         AttachmentAssembler attachmentAssembler
     ) {
         this.attachmentMapper = attachmentMapper;
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.attachmentEffectDefinitionService = attachmentEffectDefinitionService;
         this.attachmentAssembler = attachmentAssembler;
     }
@@ -47,7 +48,7 @@ public class AttachmentHydrator {
 
         var ids = rows.stream().map(AttachmentRow::id).toList();
         var weaponIdRows = attachmentMapper.findWeaponIdsByAttachmentIds(ids);
-        var existingWeaponIds = weaponService.findByIds(
+        var existingWeaponIds = weaponQueryService.findByIds(
                 weaponIdRows.stream()
                     .map(OwnedStringValue::value)
                     .distinct()
@@ -57,7 +58,7 @@ public class AttachmentHydrator {
     }
 
     public List<Attachment> hydrateAll(List<AttachmentRow> rows) {
-        var existingWeaponIds = weaponService.listAll().stream()
+        var existingWeaponIds = weaponQueryService.listAll().stream()
             .map(weapon -> weapon.id())
             .collect(Collectors.toSet());
         return hydrateWith(rows, existingWeaponIds);
@@ -71,10 +72,14 @@ public class AttachmentHydrator {
         var ids = rows.stream().map(AttachmentRow::id).toList();
         var definitionsById = attachmentEffectDefinitionService.listAll().stream()
             .collect(Collectors.toMap(AttachmentEffectDefinition::id, Function.identity()));
-        var rawWeaponIdsByAttachmentId = groupValues(attachmentMapper.findWeaponIdsByAttachmentIds(ids));
+        var rawWeaponIdsByAttachmentId = OwnedStringValueSupport.groupValues(
+            attachmentMapper.findWeaponIdsByAttachmentIds(ids)
+        );
         warnMissingWeaponBindings(rawWeaponIdsByAttachmentId, existingWeaponIds);
         var weaponIdsByAttachmentId = filterValues(rawWeaponIdsByAttachmentId, existingWeaponIds);
-        var generationsByAttachmentId = groupValues(attachmentMapper.findGenerationsByAttachmentIds(ids));
+        var generationsByAttachmentId = OwnedStringValueSupport.groupValues(
+            attachmentMapper.findGenerationsByAttachmentIds(ids)
+        );
         var effectRows = attachmentMapper.findEffectsByAttachmentIds(ids);
         warnMissingEffectDefinitions(effectRows, definitionsById);
         var effectsByAttachmentId = effectRows.stream()
@@ -132,14 +137,6 @@ public class AttachmentHydrator {
             missingDefinitionIds.size(),
             missingDefinitionIds.stream().limit(5).toList()
         );
-    }
-
-    public Map<String, List<String>> groupValues(List<OwnedStringValue> rows) {
-        return rows.stream()
-            .collect(Collectors.groupingBy(
-                OwnedStringValue::ownerId,
-                Collectors.mapping(OwnedStringValue::value, Collectors.toList())
-            ));
     }
 
     // 没有数据库外键兜底时，读取端只过滤不存在的武器引用；真实删除和修复仍交给维护操作处理。

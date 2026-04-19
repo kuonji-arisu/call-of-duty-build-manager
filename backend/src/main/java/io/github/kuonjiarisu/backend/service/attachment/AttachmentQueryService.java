@@ -11,7 +11,7 @@ import io.github.kuonjiarisu.backend.mapper.AttachmentMapper;
 import io.github.kuonjiarisu.backend.model.Attachment;
 import io.github.kuonjiarisu.backend.model.AttachmentOption;
 import io.github.kuonjiarisu.backend.model.PageResult;
-import io.github.kuonjiarisu.backend.service.WeaponService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 import io.github.kuonjiarisu.backend.support.PageSupport;
 
@@ -19,18 +19,18 @@ import io.github.kuonjiarisu.backend.support.PageSupport;
 public class AttachmentQueryService {
 
     private final AttachmentMapper attachmentMapper;
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final AttachmentHydrator attachmentHydrator;
     private final AttachmentAssembler attachmentAssembler;
 
     public AttachmentQueryService(
         AttachmentMapper attachmentMapper,
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         AttachmentHydrator attachmentHydrator,
         AttachmentAssembler attachmentAssembler
     ) {
         this.attachmentMapper = attachmentMapper;
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.attachmentHydrator = attachmentHydrator;
         this.attachmentAssembler = attachmentAssembler;
     }
@@ -84,7 +84,7 @@ public class AttachmentQueryService {
         String generation,
         String tag
     ) {
-        var weapon = weaponService.findById(weaponId);
+        var weapon = weaponQueryService.findById(weaponId);
         var normalizedPage = PageSupport.normalizePage(page);
         var normalizedPageSize = PageSupport.normalizePageSize(pageSize);
         var normalizedKeyword = PageSupport.normalizeText(keyword);
@@ -127,7 +127,7 @@ public class AttachmentQueryService {
     }
 
     public List<Attachment> listAvailableByIdsForWeapon(String weaponId, List<String> ids) {
-        var weapon = weaponService.findById(weaponId);
+        var weapon = weaponQueryService.findById(weaponId);
         var normalizedIds = DomainSupport.normalizeList(ids);
         if (normalizedIds.isEmpty() || weapon.slots().isEmpty() || weapon.generations().isEmpty()) {
             return List.of();
@@ -160,7 +160,7 @@ public class AttachmentQueryService {
     }
 
     public List<AttachmentOption> listAvailableOptionsForWeapon(String weaponId, String slot) {
-        var weapon = weaponService.findById(weaponId);
+        var weapon = weaponQueryService.findById(weaponId);
         var normalizedSlot = PageSupport.normalizeText(slot);
         if (weapon.slots().isEmpty()
             || weapon.generations().isEmpty()
@@ -186,7 +186,7 @@ public class AttachmentQueryService {
         String slot,
         List<String> generations
     ) {
-        var weapon = weaponService.findById(weaponId);
+        var weapon = weaponQueryService.findById(weaponId);
         var normalizedPage = PageSupport.normalizePage(page);
         var normalizedPageSize = PageSupport.normalizePageSize(pageSize);
         var normalizedKeyword = PageSupport.normalizeText(keyword);

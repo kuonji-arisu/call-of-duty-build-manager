@@ -29,10 +29,6 @@
     WHERE id = #{id}
   </select>
 
-  <select id="countAll" resultType="int">
-    SELECT COUNT(*) FROM users
-  </select>
-
   <insert id="insert" parameterType="io.github.kuonjiarisu.backend.auth.model.UserAccount">
     INSERT INTO users (
       id, username, password_hash, role, display_name, enabled, last_login_at, created_at, updated_at

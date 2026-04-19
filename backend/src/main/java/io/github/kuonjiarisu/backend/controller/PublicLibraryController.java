@@ -15,24 +15,24 @@ import io.github.kuonjiarisu.backend.model.BuildSummary;
 import io.github.kuonjiarisu.backend.model.PageResult;
 import io.github.kuonjiarisu.backend.model.Weapon;
 import io.github.kuonjiarisu.backend.model.WeaponOption;
-import io.github.kuonjiarisu.backend.service.WeaponService;
 import io.github.kuonjiarisu.backend.service.attachment.AttachmentQueryService;
 import io.github.kuonjiarisu.backend.service.build.BuildQueryService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 
 @RestController
 @RequestMapping("/api/public")
 public class PublicLibraryController {
 
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final AttachmentQueryService attachmentQueryService;
     private final BuildQueryService buildQueryService;
 
     public PublicLibraryController(
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         AttachmentQueryService attachmentQueryService,
         BuildQueryService buildQueryService
     ) {
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.attachmentQueryService = attachmentQueryService;
         this.buildQueryService = buildQueryService;
     }
@@ -46,12 +46,12 @@ public class PublicLibraryController {
         @RequestParam(required = false) String generation,
         @RequestParam(required = false) Boolean favorite
     ) {
-        return weaponService.listPage(page, pageSize, keyword, weaponType, generation, favorite);
+        return weaponQueryService.listPage(page, pageSize, keyword, weaponType, generation, favorite);
     }
 
     @GetMapping("/weapons/options")
     public List<WeaponOption> listWeaponOptions() {
-        return weaponService.listOptions();
+        return weaponQueryService.listOptions();
     }
 
     @GetMapping("/weapons/search-options")
@@ -60,12 +60,12 @@ public class PublicLibraryController {
         @RequestParam(required = false) Integer pageSize,
         @RequestParam(required = false) String keyword
     ) {
-        return weaponService.searchOptions(page, pageSize, keyword);
+        return weaponQueryService.searchOptions(page, pageSize, keyword);
     }
 
     @GetMapping("/weapons/{id}")
     public Weapon getWeapon(@PathVariable String id) {
-        return weaponService.findById(id);
+        return weaponQueryService.findById(id);
     }
 
     @GetMapping("/weapons/{id}/attachments")

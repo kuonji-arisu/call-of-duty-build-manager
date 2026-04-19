@@ -13,9 +13,9 @@ import io.github.kuonjiarisu.backend.model.BuildDetailItem;
 import io.github.kuonjiarisu.backend.model.BuildItem;
 import io.github.kuonjiarisu.backend.model.BuildSummary;
 import io.github.kuonjiarisu.backend.model.PageResult;
-import io.github.kuonjiarisu.backend.service.WeaponService;
 import io.github.kuonjiarisu.backend.service.attachment.AttachmentQueryService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 import io.github.kuonjiarisu.backend.support.PageSupport;
 
@@ -25,20 +25,20 @@ public class BuildQueryService {
     private static final Logger log = LoggerFactory.getLogger(BuildQueryService.class);
 
     private final BuildMapper buildMapper;
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final AttachmentQueryService attachmentQueryService;
     private final BuildHydrator buildHydrator;
     private final ReferenceGuardService referenceGuardService;
 
     public BuildQueryService(
         BuildMapper buildMapper,
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         AttachmentQueryService attachmentQueryService,
         BuildHydrator buildHydrator,
         ReferenceGuardService referenceGuardService
     ) {
         this.buildMapper = buildMapper;
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.attachmentQueryService = attachmentQueryService;
         this.buildHydrator = buildHydrator;
         this.referenceGuardService = referenceGuardService;
@@ -86,7 +86,7 @@ public class BuildQueryService {
         }
 
         var weapon = referenceGuardService.requireReadableBuildWeapon(
-            weaponService.findByIds(List.of(row.weaponId())).get(row.weaponId())
+            weaponQueryService.findByIds(List.of(row.weaponId())).get(row.weaponId())
         );
         var build = buildHydrator.toBuilds(List.of(row)).getFirst();
         if (!weapon.generations().containsAll(build.generations())) {

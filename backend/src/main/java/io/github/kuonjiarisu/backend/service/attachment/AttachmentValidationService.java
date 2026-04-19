@@ -9,50 +9,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import io.github.kuonjiarisu.backend.mapper.AttachmentMapper;
 import io.github.kuonjiarisu.backend.mapper.BuildMapper;
 import io.github.kuonjiarisu.backend.model.Attachment;
 import io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition;
 import io.github.kuonjiarisu.backend.model.BuildItem;
 import io.github.kuonjiarisu.backend.model.BuildRow;
-import io.github.kuonjiarisu.backend.model.OwnedStringValue;
 import io.github.kuonjiarisu.backend.model.Weapon;
 import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 import io.github.kuonjiarisu.backend.service.AttachmentEffectDefinitionService;
-import io.github.kuonjiarisu.backend.service.WeaponService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
+import io.github.kuonjiarisu.backend.support.OwnedStringValueSupport;
 
 @Service
 public class AttachmentValidationService {
 
     private static final Logger log = LoggerFactory.getLogger(AttachmentValidationService.class);
 
-    private final AttachmentMapper attachmentMapper;
     private final BuildMapper buildMapper;
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final AttachmentEffectDefinitionService attachmentEffectDefinitionService;
-    private final AttachmentHydrator attachmentHydrator;
     private final ReferenceGuardService referenceGuardService;
 
     public AttachmentValidationService(
-        AttachmentMapper attachmentMapper,
         BuildMapper buildMapper,
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         AttachmentEffectDefinitionService attachmentEffectDefinitionService,
-        AttachmentHydrator attachmentHydrator,
         ReferenceGuardService referenceGuardService
     ) {
-        this.attachmentMapper = attachmentMapper;
         this.buildMapper = buildMapper;
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.attachmentEffectDefinitionService = attachmentEffectDefinitionService;
-        this.attachmentHydrator = attachmentHydrator;
         this.referenceGuardService = referenceGuardService;
     }
 
     public void validateExistingBindings(String slot, List<String> weaponIds) {
-        var weaponsById = weaponService.listAll().stream()
-            .collect(Collectors.toMap(Weapon::id, Function.identity()));
+        var weaponsById = weaponQueryService.findByIds(weaponIds);
 
         for (var weaponId : weaponIds) {
             var weapon = weaponsById.get(weaponId);
@@ -82,18 +74,24 @@ public class AttachmentValidationService {
     }
 
     public void validateExistingBuildItemUsages(Attachment normalized) {
-        var usedItems = buildMapper.findAllBuildItems().stream()
-            .filter(item -> normalized.id().equals(item.attachmentId()))
-            .toList();
+        var usedItems = buildMapper.findBuildItemsByAttachmentId(normalized.id());
         if (usedItems.isEmpty()) {
             return;
         }
 
-        var buildsById = buildMapper.findAllBuildRows().stream()
+        var buildIds = usedItems.stream()
+            .map(BuildItem::buildId)
+            .distinct()
+            .toList();
+        var buildsById = buildMapper.findBuildRowsByIds(buildIds).stream()
             .collect(Collectors.toMap(BuildRow::id, Function.identity()));
-        var buildGenerationsById = attachmentHydrator.groupValues(buildMapper.findAllGenerations());
-        var weaponsById = weaponService.listAll().stream()
-            .collect(Collectors.toMap(Weapon::id, Function.identity()));
+        var buildGenerationsById = OwnedStringValueSupport.groupValues(buildMapper.findGenerationsByBuildIds(buildIds));
+        var weaponsById = weaponQueryService.findByIds(
+            buildsById.values().stream()
+                .map(BuildRow::weaponId)
+                .distinct()
+                .toList()
+        );
 
         // 这里不是重新计算配件可用性，而是保护已存在的推荐配装不被一次配件编辑改坏。
         for (var item : usedItems) {

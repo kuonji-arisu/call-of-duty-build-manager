@@ -16,8 +16,8 @@ import io.github.kuonjiarisu.backend.model.BuildItem;
 import io.github.kuonjiarisu.backend.model.BuildRow;
 import io.github.kuonjiarisu.backend.model.command.BuildItemSaveCommand;
 import io.github.kuonjiarisu.backend.model.command.BuildSaveCommand;
-import io.github.kuonjiarisu.backend.service.WeaponService;
 import io.github.kuonjiarisu.backend.service.attachment.AttachmentQueryService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 
 @Service
@@ -26,18 +26,18 @@ public class BuildCommandService {
     private static final Logger log = LoggerFactory.getLogger(BuildCommandService.class);
 
     private final BuildMapper buildMapper;
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final AttachmentQueryService attachmentQueryService;
     private final BuildItemValidationService buildItemValidationService;
 
     public BuildCommandService(
         BuildMapper buildMapper,
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         AttachmentQueryService attachmentQueryService,
         BuildItemValidationService buildItemValidationService
     ) {
         this.buildMapper = buildMapper;
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.attachmentQueryService = attachmentQueryService;
         this.buildItemValidationService = buildItemValidationService;
     }
@@ -72,7 +72,7 @@ public class BuildCommandService {
             now
         );
         var existed = currentRow != null;
-        var weapon = weaponService.findById(normalized.weaponId());
+        var weapon = weaponQueryService.findById(normalized.weaponId());
         var existingItemsBySlot = buildMapper.findBuildItemsByBuildId(normalized.id()).stream()
             .collect(Collectors.toMap(BuildItem::slot, item -> item, (left, right) -> left));
         var normalizedItems = normalizeItems(normalized.id(), command.items(), existingItemsBySlot, now);

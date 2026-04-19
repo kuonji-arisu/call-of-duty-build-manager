@@ -14,6 +14,7 @@ import io.github.kuonjiarisu.backend.auth.model.LoginResponse;
 import io.github.kuonjiarisu.backend.auth.model.LogoutResponse;
 import io.github.kuonjiarisu.backend.auth.security.AuthenticatedUser;
 import io.github.kuonjiarisu.backend.auth.service.AuthService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
 

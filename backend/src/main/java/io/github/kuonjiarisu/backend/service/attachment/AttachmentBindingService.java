@@ -13,10 +13,11 @@ import io.github.kuonjiarisu.backend.model.AttachmentBindingCandidate;
 import io.github.kuonjiarisu.backend.model.AttachmentBindingUpdateRequest;
 import io.github.kuonjiarisu.backend.model.AttachmentRow;
 import io.github.kuonjiarisu.backend.model.PageResult;
-import io.github.kuonjiarisu.backend.service.WeaponService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
+import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 import io.github.kuonjiarisu.backend.support.JsonStringListCodec;
+import io.github.kuonjiarisu.backend.support.OwnedStringValueSupport;
 import io.github.kuonjiarisu.backend.support.PageSupport;
 
 @Service
@@ -25,7 +26,7 @@ public class AttachmentBindingService {
     private static final Logger log = LoggerFactory.getLogger(AttachmentBindingService.class);
 
     private final AttachmentMapper attachmentMapper;
-    private final WeaponService weaponService;
+    private final WeaponQueryService weaponQueryService;
     private final JsonStringListCodec stringListCodec;
     private final AttachmentHydrator attachmentHydrator;
     private final AttachmentQueryService attachmentQueryService;
@@ -34,7 +35,7 @@ public class AttachmentBindingService {
 
     public AttachmentBindingService(
         AttachmentMapper attachmentMapper,
-        WeaponService weaponService,
+        WeaponQueryService weaponQueryService,
         JsonStringListCodec stringListCodec,
         AttachmentHydrator attachmentHydrator,
         AttachmentQueryService attachmentQueryService,
@@ -42,7 +43,7 @@ public class AttachmentBindingService {
         ReferenceGuardService referenceGuardService
     ) {
         this.attachmentMapper = attachmentMapper;
-        this.weaponService = weaponService;
+        this.weaponQueryService = weaponQueryService;
         this.stringListCodec = stringListCodec;
         this.attachmentHydrator = attachmentHydrator;
         this.attachmentQueryService = attachmentQueryService;
@@ -60,7 +61,7 @@ public class AttachmentBindingService {
         String tag,
         Boolean bound
     ) {
-        var weapon = weaponService.findById(weaponId);
+        var weapon = weaponQueryService.findById(weaponId);
         var normalizedPage = PageSupport.normalizePage(page);
         var normalizedPageSize = PageSupport.normalizePageSize(pageSize);
         var normalizedKeyword = PageSupport.normalizeText(keyword);
@@ -102,7 +103,7 @@ public class AttachmentBindingService {
 
         var attachmentIds = rows.stream().map(AttachmentRow::id).toList();
         var boundIds = Set.copyOf(attachmentMapper.findAttachmentIdsBoundToWeapon(weapon.id(), attachmentIds));
-        var generationsByAttachmentId = attachmentHydrator.groupValues(
+        var generationsByAttachmentId = OwnedStringValueSupport.groupValues(
             attachmentMapper.findGenerationsByAttachmentIds(attachmentIds)
         );
         var candidates = rows.stream()
@@ -121,7 +122,7 @@ public class AttachmentBindingService {
 
     @Transactional
     public void updateBindings(AttachmentBindingUpdateRequest request) {
-        var weapon = weaponService.findById(request.weaponId());
+        var weapon = weaponQueryService.findById(request.weaponId());
         var attachmentIds = DomainSupport.requireList(request.attachmentIds(), "配件");
         var shouldBind = Boolean.TRUE.equals(request.bound());
         var attachmentsById = attachmentQueryService.findByIds(attachmentIds);

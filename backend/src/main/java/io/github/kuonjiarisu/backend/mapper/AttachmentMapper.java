@@ -99,8 +99,6 @@ public interface AttachmentMapper {
         @Param("attachmentIds") List<String> attachmentIds
     );
 
-    List<OwnedStringValue> findAllGenerations();
-
     List<OwnedStringValue> findGenerationsByAttachmentIds(@Param("ids") List<String> ids);
 
     List<AttachmentEffectRow> findAllEffects();
