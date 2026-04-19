@@ -3,33 +3,37 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.AttachmentEffectDefinitionMapper">
+  <sql id="definitionColumns">
+    id,
+    label,
+    sort_order AS sortOrder,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  </sql>
+
+  <sql id="definitionOptionColumns">
+    id,
+    label,
+    sort_order AS sortOrder
+  </sql>
+
   <select id="findAll" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
     SELECT
-      id,
-      label,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="definitionColumns" />
     FROM attachment_effect_definitions
     ORDER BY sort_order ASC, label ASC, id ASC
   </select>
 
   <select id="findOptions" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinitionOption">
     SELECT
-      id,
-      label,
-      sort_order AS sortOrder
+      <include refid="definitionOptionColumns" />
     FROM attachment_effect_definitions
     ORDER BY sort_order ASC, label ASC, id ASC
   </select>
 
   <select id="findPage" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
     SELECT
-      id,
-      label,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="definitionColumns" />
     FROM attachment_effect_definitions
     <where>
       <if test="keyword != null and keyword != ''">
@@ -52,11 +56,7 @@
 
   <select id="findById" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectDefinition">
     SELECT
-      id,
-      label,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="definitionColumns" />
     FROM attachment_effect_definitions
     WHERE id = #{id}
   </select>

@@ -3,16 +3,35 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.AttachmentMapper">
+  <sql id="attachmentRowColumns">
+    id,
+    name,
+    subtitle,
+    slot,
+    CAST(tags AS CHAR) AS tagsJson,
+    sort_order AS sortOrder,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  </sql>
+
+  <sql id="attachmentEffectColumns">
+    attachment_id AS attachmentId,
+    definition_id AS definitionId,
+    effect_type AS effectType,
+    level
+  </sql>
+
+  <sql id="attachmentWeaponValueColumns">
+    attachment_id AS ownerId, weapon_id AS value
+  </sql>
+
+  <sql id="attachmentGenerationValueColumns">
+    attachment_id AS ownerId, generation AS value
+  </sql>
+
   <select id="findAllRows" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     ORDER BY sort_order ASC, name ASC, id ASC
   </select>
@@ -49,14 +68,7 @@
 
   <select id="findRows" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     <include refid="attachmentFilters" />
     ORDER BY sort_order ASC, name ASC, id ASC
@@ -122,14 +134,7 @@
 
   <select id="findBindingCandidateRows" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     <include refid="attachmentBindingCandidateFilters" />
     ORDER BY sort_order ASC, name ASC, id ASC
@@ -194,14 +199,7 @@
 
   <select id="findAvailableRowsForWeapon" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     <include refid="availableAttachmentFilters" />
     ORDER BY sort_order ASC, name ASC, id ASC
@@ -216,14 +214,7 @@
 
   <select id="findAvailableOptionRowsForWeapon" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     WHERE EXISTS (
       SELECT 1
@@ -252,28 +243,14 @@
 
   <select id="findRowById" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     WHERE id = #{id}
   </select>
 
   <select id="findRowsByIds" resultType="io.github.kuonjiarisu.backend.model.AttachmentRow">
     SELECT
-      id,
-      name,
-      subtitle,
-      slot,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="attachmentRowColumns" />
     FROM attachments
     WHERE id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -283,7 +260,7 @@
   </select>
 
   <select id="findWeaponIdsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT attachment_id AS ownerId, weapon_id AS value
+    SELECT <include refid="attachmentWeaponValueColumns" />
     FROM attachment_weapons
     WHERE attachment_id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -304,7 +281,7 @@
   </select>
 
   <select id="findGenerationsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT attachment_id AS ownerId, generation AS value
+    SELECT <include refid="attachmentGenerationValueColumns" />
     FROM attachment_generations
     WHERE attachment_id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -315,20 +292,14 @@
 
   <select id="findAllEffects" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectRow">
     SELECT
-      attachment_id AS attachmentId,
-      definition_id AS definitionId,
-      effect_type AS effectType,
-      level
+      <include refid="attachmentEffectColumns" />
     FROM attachment_effects
     ORDER BY attachment_id ASC, effect_type ASC, level DESC, definition_id ASC
   </select>
 
   <select id="findEffectsByAttachmentIds" resultType="io.github.kuonjiarisu.backend.model.AttachmentEffectRow">
     SELECT
-      attachment_id AS attachmentId,
-      definition_id AS definitionId,
-      effect_type AS effectType,
-      level
+      <include refid="attachmentEffectColumns" />
     FROM attachment_effects
     WHERE attachment_id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">

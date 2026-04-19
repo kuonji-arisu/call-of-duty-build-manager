@@ -3,6 +3,10 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.SettingMapper">
+  <sql id="settingColumns">
+    setting_key, setting_value, updated_at
+  </sql>
+
   <resultMap id="settingResultMap" type="io.github.kuonjiarisu.backend.model.AppSetting">
     <constructor>
       <arg column="setting_key" javaType="java.lang.String" />
@@ -12,13 +16,13 @@
   </resultMap>
 
   <select id="findAll" resultMap="settingResultMap">
-    SELECT setting_key, setting_value, updated_at
+    SELECT <include refid="settingColumns" />
     FROM app_settings
     ORDER BY setting_key ASC
   </select>
 
   <select id="findByKey" resultMap="settingResultMap">
-    SELECT setting_key, setting_value, updated_at
+    SELECT <include refid="settingColumns" />
     FROM app_settings
     WHERE setting_key = #{key}
   </select>

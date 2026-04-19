@@ -3,6 +3,10 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.UserMapper">
+  <sql id="userAccountColumns">
+    id, username, password_hash, role, display_name, enabled, last_login_at, created_at, updated_at
+  </sql>
+
   <resultMap id="userAccountResultMap" type="io.github.kuonjiarisu.backend.auth.model.UserAccount">
     <constructor>
       <arg column="id" javaType="java.lang.String" />
@@ -18,13 +22,13 @@
   </resultMap>
 
   <select id="findByUsername" resultMap="userAccountResultMap">
-    SELECT id, username, password_hash, role, display_name, enabled, last_login_at, created_at, updated_at
+    SELECT <include refid="userAccountColumns" />
     FROM users
     WHERE username = #{username}
   </select>
 
   <select id="findById" resultMap="userAccountResultMap">
-    SELECT id, username, password_hash, role, display_name, enabled, last_login_at, created_at, updated_at
+    SELECT <include refid="userAccountColumns" />
     FROM users
     WHERE id = #{id}
   </select>

@@ -3,6 +3,29 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.BuildMapper">
+  <sql id="buildRowColumns">
+    id,
+    weapon_id AS weaponId,
+    name,
+    notes,
+    sort_order AS sortOrder,
+    is_favorite AS isFavorite,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  </sql>
+
+  <sql id="buildItemColumns">
+    item.id,
+    item.build_id AS buildId,
+    item.slot,
+    item.attachment_id AS attachmentId,
+    item.created_at AS createdAt
+  </sql>
+
+  <sql id="buildGenerationValueColumns">
+    build_id AS ownerId, generation AS value
+  </sql>
+
   <sql id="buildFilters">
     <where>
       <if test="hideMissingWeapon">
@@ -45,14 +68,7 @@
 
   <select id="findBuildRows" resultType="io.github.kuonjiarisu.backend.model.BuildRow">
     SELECT
-      id,
-      weapon_id AS weaponId,
-      name,
-      notes,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="buildRowColumns" />
     FROM builds
     <include refid="buildFilters" />
     ORDER BY sort_order ASC, updated_at DESC, id ASC
@@ -67,28 +83,14 @@
 
   <select id="findBuildRowById" resultType="io.github.kuonjiarisu.backend.model.BuildRow">
     SELECT
-      id,
-      weapon_id AS weaponId,
-      name,
-      notes,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="buildRowColumns" />
     FROM builds
     WHERE id = #{id}
   </select>
 
   <select id="findBuildRowsByIds" resultType="io.github.kuonjiarisu.backend.model.BuildRow">
     SELECT
-      id,
-      weapon_id AS weaponId,
-      name,
-      notes,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="buildRowColumns" />
     FROM builds
     WHERE id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -98,7 +100,7 @@
   </select>
 
   <select id="findGenerationsByBuildIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT build_id AS ownerId, generation AS value
+    SELECT <include refid="buildGenerationValueColumns" />
     FROM build_generations
     WHERE build_id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -109,11 +111,7 @@
 
   <select id="findBuildItemsByAttachmentId" resultType="io.github.kuonjiarisu.backend.model.BuildItem">
     SELECT
-      item.id,
-      item.build_id AS buildId,
-      item.slot,
-      item.attachment_id AS attachmentId,
-      item.created_at AS createdAt
+      <include refid="buildItemColumns" />
     FROM build_items item
     INNER JOIN builds build ON build.id = item.build_id
     INNER JOIN weapon_slots weapon_slot
@@ -125,11 +123,7 @@
 
   <select id="findBuildItemsByBuildId" resultType="io.github.kuonjiarisu.backend.model.BuildItem">
     SELECT
-      item.id,
-      item.build_id AS buildId,
-      item.slot,
-      item.attachment_id AS attachmentId,
-      item.created_at AS createdAt
+      <include refid="buildItemColumns" />
     FROM build_items item
     INNER JOIN builds build ON build.id = item.build_id
     INNER JOIN weapon_slots weapon_slot
@@ -141,11 +135,7 @@
 
   <select id="findBuildItemsByBuildIds" resultType="io.github.kuonjiarisu.backend.model.BuildItem">
     SELECT
-      item.id,
-      item.build_id AS buildId,
-      item.slot,
-      item.attachment_id AS attachmentId,
-      item.created_at AS createdAt
+      <include refid="buildItemColumns" />
     FROM build_items item
     INNER JOIN builds build ON build.id = item.build_id
     INNER JOIN weapon_slots weapon_slot

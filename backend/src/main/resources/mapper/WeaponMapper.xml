@@ -3,16 +3,28 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.kuonjiarisu.backend.mapper.WeaponMapper">
+  <sql id="weaponRowColumns">
+    id,
+    name,
+    weapon_type AS weaponType,
+    CAST(tags AS CHAR) AS tagsJson,
+    sort_order AS sortOrder,
+    is_favorite AS isFavorite,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  </sql>
+
+  <sql id="weaponGenerationValueColumns">
+    weapon_id AS ownerId, generation AS value
+  </sql>
+
+  <sql id="weaponSlotValueColumns">
+    weapon_id AS ownerId, slot AS value
+  </sql>
+
   <select id="findAllRows" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
     SELECT
-      id,
-      name,
-      weapon_type AS weaponType,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="weaponRowColumns" />
     FROM weapons
     ORDER BY sort_order ASC, name ASC, id ASC
   </select>
@@ -41,14 +53,7 @@
 
   <select id="findRows" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
     SELECT
-      id,
-      name,
-      weapon_type AS weaponType,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="weaponRowColumns" />
     FROM weapons
     <include refid="weaponFilters" />
     ORDER BY sort_order ASC, name ASC, id ASC
@@ -63,28 +68,14 @@
 
   <select id="findRowById" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
     SELECT
-      id,
-      name,
-      weapon_type AS weaponType,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="weaponRowColumns" />
     FROM weapons
     WHERE id = #{id}
   </select>
 
   <select id="findRowsByIds" resultType="io.github.kuonjiarisu.backend.model.WeaponRow">
     SELECT
-      id,
-      name,
-      weapon_type AS weaponType,
-      CAST(tags AS CHAR) AS tagsJson,
-      sort_order AS sortOrder,
-      is_favorite AS isFavorite,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      <include refid="weaponRowColumns" />
     FROM weapons
     WHERE id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -94,13 +85,13 @@
   </select>
 
   <select id="findAllGenerations" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT weapon_id AS ownerId, generation AS value
+    SELECT <include refid="weaponGenerationValueColumns" />
     FROM weapon_generations
     ORDER BY weapon_id ASC, generation ASC
   </select>
 
   <select id="findGenerationsByWeaponIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT weapon_id AS ownerId, generation AS value
+    SELECT <include refid="weaponGenerationValueColumns" />
     FROM weapon_generations
     WHERE weapon_id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -110,13 +101,13 @@
   </select>
 
   <select id="findAllSlots" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT weapon_id AS ownerId, slot AS value
+    SELECT <include refid="weaponSlotValueColumns" />
     FROM weapon_slots
     ORDER BY weapon_id ASC, sort_order ASC, slot ASC
   </select>
 
   <select id="findSlotsByWeaponIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT weapon_id AS ownerId, slot AS value
+    SELECT <include refid="weaponSlotValueColumns" />
     FROM weapon_slots
     WHERE weapon_id IN
     <foreach collection="ids" item="id" open="(" separator="," close=")">
