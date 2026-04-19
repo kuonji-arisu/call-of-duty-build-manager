@@ -12,14 +12,17 @@ import io.github.kuonjiarisu.backend.model.InitialData;
 public class LibraryService {
 
     private final SettingService settingService;
+    private final CatalogService catalogService;
 
-    public LibraryService(SettingService settingService) {
+    public LibraryService(SettingService settingService, CatalogService catalogService) {
         this.settingService = settingService;
+        this.catalogService = catalogService;
     }
 
     public InitialData loadInitialData() {
         return new InitialData(
             new AppInfo(resolveLanguage()),
+            catalogService.catalogData(),
             settingService.listAll()
         );
     }

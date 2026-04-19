@@ -152,10 +152,9 @@
 
   <select id="countBuildsByWeaponIdAndGenerations" resultType="int">
     SELECT COUNT(*)
-    FROM builds build
-    INNER JOIN build_generations generation ON generation.build_id = build.id
-    WHERE build.weapon_id = #{weaponId}
-      AND generation.generation IN
+    FROM builds
+    WHERE weapon_id = #{weaponId}
+      AND generation IN
       <foreach collection="generations" item="generation" open="(" separator="," close=")">
         #{generation}
       </foreach>

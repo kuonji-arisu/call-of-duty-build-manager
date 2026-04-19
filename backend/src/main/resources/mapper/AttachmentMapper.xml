@@ -181,17 +181,6 @@
             AND generation_filter.generation = #{generation}
         )
       </if>
-      <if test="candidateGenerations != null and candidateGenerations.size > 0">
-        AND EXISTS (
-          SELECT 1
-          FROM attachment_generations candidate_generation_filter
-          WHERE candidate_generation_filter.attachment_id = attachments.id
-            AND candidate_generation_filter.generation IN
-            <foreach collection="candidateGenerations" item="candidateGeneration" open="(" separator="," close=")">
-              #{candidateGeneration}
-            </foreach>
-        )
-      </if>
       <if test="tag != null and tag != ''">
         AND JSON_CONTAINS(tags, JSON_QUOTE(#{tag}))
       </if>

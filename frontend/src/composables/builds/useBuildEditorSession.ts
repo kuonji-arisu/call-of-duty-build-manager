@@ -22,17 +22,16 @@ interface UseBuildEditorSessionOptions {
 
 export function defaultGenerationsForWeapon(
   weapon: WeaponOption,
-  currentGenerations: Generation[],
-): Generation[] {
+  currentGeneration: Generation,
+): Generation {
   const allowed = new Set(weapon.generations);
-  const nextGeneration = currentGenerations.find((generation) => allowed.has(generation));
-  return (nextGeneration ? [nextGeneration] : weapon.generations.slice(0, 1)) as Generation[];
+  return allowed.has(currentGeneration) ? currentGeneration : (weapon.generations[0] ?? "");
 }
 
 export function createBuildFormForWeapon(weapon: WeaponOption | null) {
   const nextForm = createEmptyBuildEditorForm(weapon?.id ?? "");
   if (weapon) {
-    nextForm.generations = defaultGenerationsForWeapon(weapon, nextForm.generations);
+    nextForm.generation = defaultGenerationsForWeapon(weapon, nextForm.generation);
   }
   return nextForm;
 }
@@ -42,7 +41,7 @@ export function buildFormFromBuild(build: Build, items: Partial<Record<Slot, str
     id: build.id,
     weaponId: build.weaponId,
     name: build.name,
-    generations: [...build.generations],
+    generation: build.generation,
     notes: build.notes ?? "",
     sortOrder: build.sortOrder,
     isFavorite: build.isFavorite,
@@ -77,7 +76,7 @@ export function useBuildEditorSession({
 
   function resetForm(nextForm: BuildEditorFormState, options: ResetBuildEditorOptions = {}) {
     Object.assign(form, nextForm);
-    form.generations = [...nextForm.generations];
+    form.generation = nextForm.generation;
     form.items = { ...nextForm.items };
     currentBuild.value = options.build ?? null;
     currentItems.value = [...(options.items ?? [])];
@@ -120,7 +119,7 @@ export function useBuildEditorSession({
     if (!weapon) {
       return;
     }
-    form.generations = defaultGenerationsForWeapon(weapon, form.generations);
+    form.generation = defaultGenerationsForWeapon(weapon, form.generation);
   }
 
   function handleFormWeaponUpdate(weapon: WeaponOption | null) {

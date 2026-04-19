@@ -19,7 +19,6 @@ import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 import io.github.kuonjiarisu.backend.service.AttachmentEffectDefinitionService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
 import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
-import io.github.kuonjiarisu.backend.support.OwnedStringValueSupport;
 
 @Service
 public class AttachmentValidationService {
@@ -43,7 +42,7 @@ public class AttachmentValidationService {
         this.referenceGuardService = referenceGuardService;
     }
 
-    public void validateExistingBindings(String slot, List<String> weaponIds) {
+    public void validateExistingBindings(String slot, List<String> generations, List<String> weaponIds) {
         var weaponsById = weaponQueryService.findByIds(weaponIds);
 
         for (var weaponId : weaponIds) {
@@ -53,6 +52,9 @@ public class AttachmentValidationService {
             }
             if (!weapon.slots().contains(slot)) {
                 throw new IllegalArgumentException("绑定武器不包含该槽位: " + weapon.name());
+            }
+            if (!referenceGuardService.intersects(generations, weapon.generations())) {
+                throw new IllegalArgumentException("配件代际与绑定武器不匹配: " + weapon.name());
             }
         }
     }
@@ -85,7 +87,6 @@ public class AttachmentValidationService {
             .toList();
         var buildsById = buildMapper.findBuildRowsByIds(buildIds).stream()
             .collect(Collectors.toMap(BuildRow::id, Function.identity()));
-        var buildGenerationsById = OwnedStringValueSupport.groupValues(buildMapper.findGenerationsByBuildIds(buildIds));
         var weaponsById = weaponQueryService.findByIds(
             buildsById.values().stream()
                 .map(BuildRow::weaponId)
@@ -95,7 +96,7 @@ public class AttachmentValidationService {
 
         // 这里不是重新计算配件可用性，而是保护已存在的推荐配装不被一次配件编辑改坏。
         for (var item : usedItems) {
-            validateExistingBuildItemUsage(normalized, item, buildsById, buildGenerationsById, weaponsById);
+            validateExistingBuildItemUsage(normalized, item, buildsById, weaponsById);
         }
     }
 
@@ -118,7 +119,6 @@ public class AttachmentValidationService {
         Attachment normalized,
         BuildItem item,
         Map<String, BuildRow> buildsById,
-        Map<String, List<String>> buildGenerationsById,
         Map<String, Weapon> weaponsById
     ) {
         var build = buildsById.get(item.buildId());
@@ -154,10 +154,7 @@ public class AttachmentValidationService {
         if (!referenceGuardService.intersects(normalized.generations(), weapon.generations())) {
             throw new IllegalArgumentException("该配件仍被配装使用，不能移除与武器匹配的代际");
         }
-        if (!referenceGuardService.intersects(
-            normalized.generations(),
-            buildGenerationsById.getOrDefault(build.id(), List.of())
-        )) {
+        if (!normalized.generations().contains(build.generation())) {
             throw new IllegalArgumentException("该配件仍被配装使用，不能移除与配装匹配的代际");
         }
     }

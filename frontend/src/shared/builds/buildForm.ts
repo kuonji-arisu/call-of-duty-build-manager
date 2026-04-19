@@ -5,7 +5,7 @@ export function createBuildFormSnapshot(form: BuildEditorFormState) {
     id: form.id,
     weaponId: form.weaponId,
     name: form.name,
-    generations: [...form.generations].sort(),
+    generation: form.generation,
     notes: form.notes,
     sortOrder: form.sortOrder,
     isFavorite: form.isFavorite,

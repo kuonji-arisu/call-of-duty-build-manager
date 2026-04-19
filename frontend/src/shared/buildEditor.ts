@@ -4,7 +4,7 @@ export interface BuildEditorFormState {
   id: string;
   weaponId: string;
   name: string;
-  generations: Generation[];
+  generation: Generation;
   notes: string;
   sortOrder: number;
   isFavorite: boolean;
@@ -16,7 +16,7 @@ export function createEmptyBuildEditorForm(preferredWeaponId = ""): BuildEditorF
     id: "",
     weaponId: preferredWeaponId,
     name: "",
-    generations: ["BO7"],
+    generation: "",
     notes: "",
     sortOrder: 0,
     isFavorite: false,

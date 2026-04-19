@@ -5,10 +5,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.github.kuonjiarisu.backend.model.Build;
 import io.github.kuonjiarisu.backend.model.BuildItem;
 import io.github.kuonjiarisu.backend.model.BuildRow;
-import io.github.kuonjiarisu.backend.model.OwnedStringValue;
 
 @Mapper
 public interface BuildMapper {
@@ -35,8 +33,6 @@ public interface BuildMapper {
 
     List<BuildRow> findBuildRowsByIds(@Param("ids") List<String> ids);
 
-    List<OwnedStringValue> findGenerationsByBuildIds(@Param("ids") List<String> ids);
-
     List<BuildItem> findBuildItemsByAttachmentId(@Param("attachmentId") String attachmentId);
 
     List<BuildItem> findBuildItemsByBuildId(@Param("buildId") String buildId);
@@ -46,10 +42,6 @@ public interface BuildMapper {
     int countById(@Param("id") String id);
 
     void upsertBuildRow(BuildRow build);
-
-    int deleteGenerationsByBuildId(@Param("buildId") String buildId);
-
-    void insertGenerations(@Param("buildId") String buildId, @Param("values") List<String> values);
 
     int deleteBuildById(@Param("id") String id);
 

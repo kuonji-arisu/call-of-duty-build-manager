@@ -15,7 +15,6 @@ import io.github.kuonjiarisu.backend.model.BuildRow;
 import io.github.kuonjiarisu.backend.model.BuildSummary;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
 import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
-import io.github.kuonjiarisu.backend.support.OwnedStringValueSupport;
 
 @Component
 public class BuildHydrator {
@@ -46,13 +45,10 @@ public class BuildHydrator {
         var existingWeaponIds = weaponQueryService.findByIds(
             rows.stream().map(BuildRow::weaponId).distinct().toList()
         ).keySet();
-        var generationsByBuildId = OwnedStringValueSupport.groupValues(buildMapper.findGenerationsByBuildIds(
-            rows.stream().map(BuildRow::id).toList()
-        ));
         warnMissingWeapons("build list", rows, existingWeaponIds);
         return rows.stream()
             .filter(row -> existingWeaponIds.contains(row.weaponId()) || !referenceGuardService.shouldHideMissingWeapon())
-            .map(row -> buildAssembler.toBuild(row, generationsByBuildId))
+            .map(buildAssembler::toBuild)
             .toList();
     }
 
@@ -62,7 +58,6 @@ public class BuildHydrator {
         }
 
         var ids = rows.stream().map(BuildRow::id).toList();
-        var generationsByBuildId = OwnedStringValueSupport.groupValues(buildMapper.findGenerationsByBuildIds(ids));
         var itemCountsByBuildId = buildMapper.findBuildItemsByBuildIds(ids).stream()
             .collect(Collectors.groupingBy(BuildItem::buildId, Collectors.collectingAndThen(
                 Collectors.counting(),
@@ -80,7 +75,6 @@ public class BuildHydrator {
             .filter(row -> weaponsById.containsKey(row.weaponId()) || !referenceGuardService.shouldHideMissingWeapon())
             .map(row -> buildAssembler.toSummary(
                 row,
-                generationsByBuildId,
                 itemCountsByBuildId,
                 weaponsById.get(row.weaponId())
             ))

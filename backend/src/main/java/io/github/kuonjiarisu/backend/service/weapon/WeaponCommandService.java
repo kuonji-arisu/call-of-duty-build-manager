@@ -13,6 +13,7 @@ import io.github.kuonjiarisu.backend.mapper.WeaponMapper;
 import io.github.kuonjiarisu.backend.model.Weapon;
 import io.github.kuonjiarisu.backend.model.WeaponRow;
 import io.github.kuonjiarisu.backend.model.command.WeaponSaveCommand;
+import io.github.kuonjiarisu.backend.service.CatalogService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 import io.github.kuonjiarisu.backend.support.JsonStringListCodec;
@@ -26,17 +27,20 @@ public class WeaponCommandService {
     private final WeaponQueryService weaponQueryService;
     private final ReferenceGuardService referenceGuardService;
     private final JsonStringListCodec stringListCodec;
+    private final CatalogService catalogService;
 
     public WeaponCommandService(
         WeaponMapper weaponMapper,
         WeaponQueryService weaponQueryService,
         ReferenceGuardService referenceGuardService,
-        JsonStringListCodec stringListCodec
+        JsonStringListCodec stringListCodec,
+        CatalogService catalogService
     ) {
         this.weaponMapper = weaponMapper;
         this.weaponQueryService = weaponQueryService;
         this.referenceGuardService = referenceGuardService;
         this.stringListCodec = stringListCodec;
+        this.catalogService = catalogService;
     }
 
     @Transactional
@@ -60,7 +64,7 @@ public class WeaponCommandService {
             DomainSupport.requireText(command.name(), "武器名称"),
             DomainSupport.requireText(command.weaponType(), "武器分类"),
             DomainSupport.normalizeList(command.tags()),
-            DomainSupport.requireList(command.generations(), "武器代际"),
+            catalogService.requireGenerations(command.generations(), "武器代际"),
             DomainSupport.requireList(command.slots(), "武器槽位"),
             command.sortOrder() == null ? 0 : command.sortOrder(),
             Boolean.TRUE.equals(command.isFavorite()),

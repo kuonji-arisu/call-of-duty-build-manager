@@ -53,7 +53,15 @@ const filters = reactive({
   tag: "ALL" as TagFilter,
 });
 const pageSizes = [10, 20, 50, 100];
-const generationOptions = computed(() => toSelectOptions(getGenerationOptions()));
+const generationOptions = computed(() => {
+  const availableGenerations = props.weapon?.generations ?? [];
+  const options = getGenerationOptions();
+  return toSelectOptions(
+    availableGenerations.length
+      ? options.filter((option) => availableGenerations.includes(option.value))
+      : options,
+  );
+});
 const attachmentTagOptions = computed(() => toSelectOptions(getAttachmentTagOptions()));
 const slotLabel = computed(() => (props.attachmentSlot ? getSlotLabel(props.attachmentSlot) : ""));
 const displayErrorMessage = computed(() => props.errorMessage || loadErrorMessage.value);

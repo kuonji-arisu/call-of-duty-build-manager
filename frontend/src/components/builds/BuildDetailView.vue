@@ -49,9 +49,7 @@ const buildSlots = computed(() =>
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <TagBadge v-for="generation in build.generations" :key="generation" tone="accent">
-            {{ getGenerationLabel(generation) }}
-          </TagBadge>
+          <TagBadge tone="accent">{{ getGenerationLabel(build.generation) }}</TagBadge>
           <TagBadge v-if="build.isFavorite" tone="muted">收藏</TagBadge>
         </div>
       </div>

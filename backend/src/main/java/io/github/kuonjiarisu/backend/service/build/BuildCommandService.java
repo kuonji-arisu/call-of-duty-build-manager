@@ -17,6 +17,7 @@ import io.github.kuonjiarisu.backend.model.BuildRow;
 import io.github.kuonjiarisu.backend.model.command.BuildItemSaveCommand;
 import io.github.kuonjiarisu.backend.model.command.BuildSaveCommand;
 import io.github.kuonjiarisu.backend.service.attachment.AttachmentQueryService;
+import io.github.kuonjiarisu.backend.service.CatalogService;
 import io.github.kuonjiarisu.backend.service.weapon.WeaponQueryService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 
@@ -29,17 +30,20 @@ public class BuildCommandService {
     private final WeaponQueryService weaponQueryService;
     private final AttachmentQueryService attachmentQueryService;
     private final BuildItemValidationService buildItemValidationService;
+    private final CatalogService catalogService;
 
     public BuildCommandService(
         BuildMapper buildMapper,
         WeaponQueryService weaponQueryService,
         AttachmentQueryService attachmentQueryService,
-        BuildItemValidationService buildItemValidationService
+        BuildItemValidationService buildItemValidationService,
+        CatalogService catalogService
     ) {
         this.buildMapper = buildMapper;
         this.weaponQueryService = weaponQueryService;
         this.attachmentQueryService = attachmentQueryService;
         this.buildItemValidationService = buildItemValidationService;
+        this.catalogService = catalogService;
     }
 
     @Transactional
@@ -64,7 +68,7 @@ public class BuildCommandService {
             id,
             DomainSupport.requireText(command.weaponId(), "所属武器"),
             DomainSupport.requireText(command.name(), "配装名称"),
-            requireSingleGeneration(command.generations()),
+            catalogService.requireGeneration(command.generation(), "配装代际"),
             command.notes() == null ? null : command.notes().trim(),
             command.sortOrder() == null ? 0 : command.sortOrder(),
             Boolean.TRUE.equals(command.isFavorite()),
@@ -87,38 +91,27 @@ public class BuildCommandService {
             normalized.id(),
             normalized.weaponId(),
             normalized.name(),
+            normalized.generation(),
             normalized.notes(),
             normalized.sortOrder(),
             normalized.isFavorite(),
             normalized.createdAt(),
             normalized.updatedAt()
         ));
-        buildMapper.deleteGenerationsByBuildId(normalized.id());
-        if (!normalized.generations().isEmpty()) {
-            buildMapper.insertGenerations(normalized.id(), normalized.generations());
-        }
 
         buildMapper.deleteItemsByBuildId(normalized.id());
         if (!normalizedItems.isEmpty()) {
             buildMapper.insertItems(normalizedItems);
         }
         log.info(
-            "Saved recommended build: buildId={} weaponId={} operation={} generationCount={} itemCount={}",
+            "Saved recommended build: buildId={} weaponId={} operation={} generation={} itemCount={}",
             normalized.id(),
             normalized.weaponId(),
             existed ? "update" : "create",
-            normalized.generations().size(),
+            normalized.generation(),
             normalizedItems.size()
         );
         return normalized;
-    }
-
-    private List<String> requireSingleGeneration(List<String> generations) {
-        var normalizedGenerations = DomainSupport.requireList(generations, "配装代际");
-        if (normalizedGenerations.size() != 1) {
-            throw new IllegalArgumentException("配装只能选择一个代际");
-        }
-        return normalizedGenerations;
     }
 
     @Transactional
@@ -129,7 +122,6 @@ public class BuildCommandService {
         }
 
         buildMapper.deleteItemsByBuildId(buildId);
-        buildMapper.deleteGenerationsByBuildId(buildId);
         buildMapper.deleteBuildById(buildId);
         log.info("Deleted recommended build: buildId={}", buildId);
     }

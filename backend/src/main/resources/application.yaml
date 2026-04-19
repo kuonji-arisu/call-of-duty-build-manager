@@ -22,6 +22,12 @@ server:
       force: true
 
 app:
+  catalog:
+    generations:
+      - value: BO7
+        label: BO7
+      - value: WZ
+        label: Warzone
   auth:
     access-token-ttl-minutes: ${APP_AUTH_ACCESS_TOKEN_TTL_MINUTES:120}
     captcha-ttl-minutes: ${APP_AUTH_CAPTCHA_TTL_MINUTES:5}

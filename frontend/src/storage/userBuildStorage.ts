@@ -1,16 +1,15 @@
 import {
-  GENERATIONS,
   SLOTS,
   type Generation,
   type Slot,
 } from "../shared/types/common";
+import { getGenerationOptions } from "../shared/utils/labels";
 import {
   type Build,
   type BuildItem,
 } from "../shared/types";
 
 const STORAGE_KEY = "cod-build-manager:user-builds:v1";
-const generationSet = new Set<string>(GENERATIONS);
 const slotSet = new Set<string>(SLOTS);
 
 export interface PersistedUserBuilds {
@@ -44,16 +43,6 @@ function normalizedIso(value: unknown, fallback: string): string {
   return text && !Number.isNaN(Date.parse(text)) ? text : fallback;
 }
 
-function normalizedGenerations(value: unknown): Generation[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return [...new Set(value.filter((item): item is Generation =>
-    typeof item === "string" && generationSet.has(item),
-  ))];
-}
-
 function normalizeBuild(value: unknown): Build | null {
   if (!isRecord(value)) {
     return null;
@@ -62,8 +51,9 @@ function normalizeBuild(value: unknown): Build | null {
   const id = normalizedText(value.id);
   const weaponId = normalizedText(value.weaponId);
   const name = normalizedText(value.name);
-  const generations = normalizedGenerations(value.generations);
-  if (!id || !weaponId || !name || generations.length !== 1) {
+  const generation = normalizedText(value.generation) as Generation;
+  const allowedGenerations = new Set(getGenerationOptions().map((option) => option.value));
+  if (!id || !weaponId || !name || !generation || !allowedGenerations.has(generation)) {
     return null;
   }
 
@@ -72,7 +62,7 @@ function normalizeBuild(value: unknown): Build | null {
     id,
     weaponId,
     name,
-    generations,
+    generation,
     notes: normalizedOptionalText(value.notes),
     sortOrder: normalizedNumber(value.sortOrder),
     isFavorite: normalizedBoolean(value.isFavorite),

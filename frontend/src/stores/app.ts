@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 
 import { adminSettingsApi } from "../api/admin/settings";
 import { loadInitialData } from "../api/public/bootstrap";
-import { GENERATIONS, type Generation } from "../shared/types/common";
-import type { AppInfo, AppSetting } from "../shared/types";
+import { getGenerationOptions, setGenerationOptions } from "../shared/utils/labels";
+import type { AppInfo, AppSetting, CatalogData, GenerationFilter } from "../shared/types";
 import { useBuildsStore } from "./builds";
 import { useGenerationStore } from "./generation";
 
@@ -13,6 +13,9 @@ export const useAppStore = defineStore("app", {
     isReady: false,
     errorMessage: "",
     settings: [] as AppSetting[],
+    catalog: {
+      generations: [],
+    } as CatalogData,
     appInfo: {
       language: "zh-CN",
     } as AppInfo,
@@ -40,12 +43,14 @@ export const useAppStore = defineStore("app", {
         const buildsStore = useBuildsStore();
 
         this.appInfo = data.appInfo;
+        this.catalog = data.catalog;
+        setGenerationOptions(data.catalog.generations);
         buildsStore.initialize();
         this.settings = data.settings;
 
         const generationFilter = this.getSettingValue("homeGenerationFilter");
-        if (generationFilter === "ALL" || GENERATIONS.includes(generationFilter as Generation)) {
-          generationStore.setGenerationFilter(generationFilter as Generation | "ALL");
+        if (generationFilter && isKnownGenerationFilter(generationFilter)) {
+          generationStore.setGenerationFilter(generationFilter as GenerationFilter);
         }
 
         this.isReady = true;
@@ -71,8 +76,8 @@ export const useAppStore = defineStore("app", {
 
       if (key === "homeGenerationFilter") {
         const generationStore = useGenerationStore();
-        if (value === "ALL" || GENERATIONS.includes(value as Generation)) {
-          generationStore.setGenerationFilter(value as Generation | "ALL");
+        if (isKnownGenerationFilter(value)) {
+          generationStore.setGenerationFilter(value as GenerationFilter);
         }
       }
 
@@ -80,3 +85,7 @@ export const useAppStore = defineStore("app", {
     },
   },
 });
+
+function isKnownGenerationFilter(value: string) {
+  return value === "ALL" || getGenerationOptions().some((option) => option.value === value);
+}

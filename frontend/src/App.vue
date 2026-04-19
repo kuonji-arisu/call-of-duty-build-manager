@@ -8,7 +8,7 @@ import { useAuthStore } from "./stores/auth";
 
 const appStore = useAppStore();
 const authStore = useAuthStore();
-const { isLoading, isReady, errorMessage } = storeToRefs(appStore);
+const { isReady, errorMessage } = storeToRefs(appStore);
 
 onMounted(() => {
   void (async () => {
@@ -23,7 +23,7 @@ onMounted(() => {
     <n-message-provider>
       <n-dialog-provider>
       <div
-        v-if="isLoading && !isReady"
+        v-if="!isReady && !errorMessage"
         class="app-shell-bg flex min-h-screen items-center justify-center p-6"
       >
         <n-card :bordered="false" class="hero-panel glass-panel card-xl w-full max-w-xl">

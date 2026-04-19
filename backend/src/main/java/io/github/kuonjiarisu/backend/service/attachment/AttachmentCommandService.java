@@ -15,6 +15,7 @@ import io.github.kuonjiarisu.backend.model.AttachmentRow;
 import io.github.kuonjiarisu.backend.model.OwnedStringValue;
 import io.github.kuonjiarisu.backend.model.command.AttachmentEffectSaveCommand;
 import io.github.kuonjiarisu.backend.model.command.AttachmentSaveCommand;
+import io.github.kuonjiarisu.backend.service.CatalogService;
 import io.github.kuonjiarisu.backend.service.reference.ReferenceGuardService;
 import io.github.kuonjiarisu.backend.support.DomainSupport;
 import io.github.kuonjiarisu.backend.support.JsonStringListCodec;
@@ -30,6 +31,7 @@ public class AttachmentCommandService {
     private final AttachmentEffectNormalizer attachmentEffectNormalizer;
     private final AttachmentValidationService attachmentValidationService;
     private final ReferenceGuardService referenceGuardService;
+    private final CatalogService catalogService;
 
     public AttachmentCommandService(
         AttachmentMapper attachmentMapper,
@@ -37,7 +39,8 @@ public class AttachmentCommandService {
         JsonStringListCodec stringListCodec,
         AttachmentEffectNormalizer attachmentEffectNormalizer,
         AttachmentValidationService attachmentValidationService,
-        ReferenceGuardService referenceGuardService
+        ReferenceGuardService referenceGuardService,
+        CatalogService catalogService
     ) {
         this.attachmentMapper = attachmentMapper;
         this.attachmentQueryService = attachmentQueryService;
@@ -45,6 +48,7 @@ public class AttachmentCommandService {
         this.attachmentEffectNormalizer = attachmentEffectNormalizer;
         this.attachmentValidationService = attachmentValidationService;
         this.referenceGuardService = referenceGuardService;
+        this.catalogService = catalogService;
     }
 
     @Transactional
@@ -72,7 +76,7 @@ public class AttachmentCommandService {
             DomainSupport.requireText(command.subtitle(), "配件副标题"),
             DomainSupport.requireText(command.slot(), "配件槽位"),
             currentWeaponIds(id),
-            DomainSupport.requireList(command.generations(), "配件代际"),
+            catalogService.requireGenerations(command.generations(), "配件代际"),
             DomainSupport.normalizeList(command.tags()),
             toReadEffects(normalizedEffects),
             command.sortOrder() == null ? 0 : command.sortOrder(),
@@ -81,7 +85,7 @@ public class AttachmentCommandService {
         );
         var existed = currentRow != null;
 
-        attachmentValidationService.validateExistingBindings(normalized.slot(), normalized.weaponIds());
+        attachmentValidationService.validateExistingBindings(normalized.slot(), normalized.generations(), normalized.weaponIds());
         attachmentValidationService.validateEffectDefinitions(normalizedEffects);
         attachmentValidationService.validateExistingBuildItemUsages(normalized);
 

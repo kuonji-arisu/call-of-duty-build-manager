@@ -6,6 +6,7 @@ public record BuildRow(
     String id,
     String weaponId,
     String name,
+    String generation,
     String notes,
     Integer sortOrder,
     Boolean isFavorite,

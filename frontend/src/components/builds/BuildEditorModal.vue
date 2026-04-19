@@ -46,13 +46,13 @@ const generationOptions = computed(() => {
     return toSelectOptions(options);
   }
 
-  const visibleGenerations = new Set([...props.selectedWeapon.generations, ...props.form.generations]);
+  const visibleGenerations = new Set([...props.selectedWeapon.generations, props.form.generation].filter(Boolean));
   return toSelectOptions(options.filter((option) => visibleGenerations.has(option.value)));
 });
 const slotEntries = computed(() => props.selectedWeapon?.slots.map((slot) => ({ slot })) ?? []);
 
 function updateGeneration(value: string | null) {
-  props.form.generations = value ? [value as Generation] : [];
+  props.form.generation = value ? (value as Generation) : "";
 }
 </script>
 
@@ -109,7 +109,7 @@ function updateGeneration(value: string | null) {
           </n-form-item>
           <n-form-item class="md:col-span-2" label="代际">
             <n-select
-              :value="props.form.generations[0] ?? null"
+              :value="props.form.generation || null"
               :options="generationOptions"
               placeholder="选择配装代际"
               @update:value="updateGeneration"
@@ -133,7 +133,7 @@ function updateGeneration(value: string | null) {
               :value="props.form.items[entry.slot] ?? ''"
               :selected-attachment="selectedAttachments[entry.slot] ?? null"
               :attachment-slot="entry.slot"
-              :generations="props.form.generations"
+              :generation="props.form.generation"
               :weapon-id="props.form.weaponId"
               :source="source"
               placeholder="不选择配件"

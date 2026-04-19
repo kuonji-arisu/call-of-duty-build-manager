@@ -27,7 +27,7 @@ export const useBuildsStore = defineStore("builds", {
       const generationStore = useGenerationStore();
 
       return this.sortedBuilds.filter((build) =>
-        matchesGenerationFilter(build.generations, generationStore.generationFilter),
+        matchesGenerationFilter([build.generation], generationStore.generationFilter),
       );
     },
   },

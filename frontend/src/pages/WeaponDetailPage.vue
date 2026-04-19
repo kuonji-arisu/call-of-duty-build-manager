@@ -48,7 +48,12 @@ const buildFilters = reactive({
   favorite: "ALL" as FavoriteFilter,
 });
 
-const generationOptions = computed(() => toSelectOptions(getGenerationOptions()));
+const generationOptions = computed(() => {
+  const options = getGenerationOptions();
+  return toSelectOptions(
+    weapon.value ? options.filter((option) => weapon.value?.generations.includes(option.value)) : options,
+  );
+});
 const favoriteOptions = [
   { label: "全部", value: "ALL" },
   { label: "仅收藏", value: "true" },
@@ -140,6 +145,9 @@ watch(
     const loaded = await loadWeapon(id);
     if (!loaded || !weapon.value) {
       return;
+    }
+    if (buildFilters.generation !== "ALL" && !weapon.value.generations.includes(buildFilters.generation)) {
+      buildFilters.generation = "ALL";
     }
     const shouldLoadBuilds = buildsPage.value === 1;
     buildsPage.value = 1;

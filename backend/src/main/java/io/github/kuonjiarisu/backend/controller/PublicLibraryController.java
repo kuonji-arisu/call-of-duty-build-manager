@@ -104,9 +104,9 @@ public class PublicLibraryController {
         @RequestParam(required = false) Integer pageSize,
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false) String slot,
-        @RequestParam(required = false) List<String> generations
+        @RequestParam(required = false) String generation
     ) {
-        return attachmentQueryService.searchAvailableOptionsForWeapon(id, page, pageSize, keyword, slot, generations);
+        return attachmentQueryService.searchAvailableOptionsForWeapon(id, page, pageSize, keyword, slot, generation);
     }
 
     @GetMapping("/attachments/options")

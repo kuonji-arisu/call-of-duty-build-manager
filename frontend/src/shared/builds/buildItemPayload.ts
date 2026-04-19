@@ -5,7 +5,6 @@ import type {
   BuildItem,
   BuildItemSavePayload,
   BuildSavePayload,
-  Generation,
   RecommendedBuildSavePayload,
   Slot,
   WeaponOption,
@@ -16,18 +15,11 @@ export function buildBuildSavePayload(form: BuildEditorFormState): BuildSavePayl
   return {
     weaponId: requireText(form.weaponId, "请选择所属武器"),
     name: requireText(form.name, "请输入配装名称"),
-    generations: requireSingleGeneration(form.generations),
+    generation: requireText(form.generation, "请选择配装代际"),
     notes: form.notes.trim() || null,
     sortOrder: Number.isNaN(form.sortOrder) ? 0 : form.sortOrder,
     isFavorite: form.isFavorite,
   };
-}
-
-function requireSingleGeneration(generations: Generation[]): Generation[] {
-  if (generations.length !== 1) {
-    throw new Error(generations.length ? "配装只能选择一个代际" : "请选择配装代际");
-  }
-  return [...generations];
 }
 
 export function buildLocalBuildRecord(

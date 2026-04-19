@@ -1,7 +1,5 @@
 package io.github.kuonjiarisu.backend.controller;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,9 +53,9 @@ public class AttachmentController {
         Integer pageSize,
         String keyword,
         String slot,
-        @RequestParam(required = false) List<String> generations
+        @RequestParam(required = false) String generation
     ) {
-        return attachmentQueryService.searchAvailableOptionsForWeapon(weaponId, page, pageSize, keyword, slot, generations);
+        return attachmentQueryService.searchAvailableOptionsForWeapon(weaponId, page, pageSize, keyword, slot, generation);
     }
 
     @PostMapping

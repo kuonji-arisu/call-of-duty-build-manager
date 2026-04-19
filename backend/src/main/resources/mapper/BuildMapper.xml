@@ -7,6 +7,7 @@
     id,
     weapon_id AS weaponId,
     name,
+    generation,
     notes,
     sort_order AS sortOrder,
     is_favorite AS isFavorite,
@@ -22,10 +23,6 @@
     item.created_at AS createdAt
   </sql>
 
-  <sql id="buildGenerationValueColumns">
-    build_id AS ownerId, generation AS value
-  </sql>
-
   <sql id="buildFilters">
     <where>
       <if test="hideMissingWeapon">
@@ -34,16 +31,11 @@
           FROM weapons weapon_filter
           WHERE weapon_filter.id = builds.weapon_id
         )
-        AND NOT EXISTS (
+        AND EXISTS (
           SELECT 1
-          FROM build_generations build_generation_filter
-          WHERE build_generation_filter.build_id = builds.id
-            AND NOT EXISTS (
-              SELECT 1
-              FROM weapon_generations weapon_generation_filter
-              WHERE weapon_generation_filter.weapon_id = builds.weapon_id
-                AND weapon_generation_filter.generation = build_generation_filter.generation
-            )
+          FROM weapon_generations weapon_generation_filter
+          WHERE weapon_generation_filter.weapon_id = builds.weapon_id
+            AND weapon_generation_filter.generation = builds.generation
         )
       </if>
       <if test="keyword != null and keyword != ''">
@@ -56,12 +48,7 @@
         AND is_favorite = #{favorite}
       </if>
       <if test="generation != null and generation != ''">
-        AND EXISTS (
-          SELECT 1
-          FROM build_generations generation_filter
-          WHERE generation_filter.build_id = builds.id
-            AND generation_filter.generation = #{generation}
-        )
+        AND generation = #{generation}
       </if>
     </where>
   </sql>
@@ -97,16 +84,6 @@
       #{id}
     </foreach>
     ORDER BY sort_order ASC, updated_at DESC, id ASC
-  </select>
-
-  <select id="findGenerationsByBuildIds" resultType="io.github.kuonjiarisu.backend.model.OwnedStringValue">
-    SELECT <include refid="buildGenerationValueColumns" />
-    FROM build_generations
-    WHERE build_id IN
-    <foreach collection="ids" item="id" open="(" separator="," close=")">
-      #{id}
-    </foreach>
-    ORDER BY build_id ASC, generation ASC
   </select>
 
   <select id="findBuildItemsByAttachmentId" resultType="io.github.kuonjiarisu.backend.model.BuildItem">
@@ -154,11 +131,12 @@
 
   <insert id="upsertBuildRow" parameterType="io.github.kuonjiarisu.backend.model.BuildRow">
     INSERT INTO builds (
-      id, weapon_id, name, notes, sort_order, is_favorite, created_at, updated_at
+      id, weapon_id, name, generation, notes, sort_order, is_favorite, created_at, updated_at
     ) VALUES (
       #{id},
       #{weaponId},
       #{name},
+      #{generation},
       #{notes},
       #{sortOrder},
       #{isFavorite},
@@ -168,22 +146,11 @@
     ON DUPLICATE KEY UPDATE
       weapon_id = VALUES(weapon_id),
       name = VALUES(name),
+      generation = VALUES(generation),
       notes = VALUES(notes),
       sort_order = VALUES(sort_order),
       is_favorite = VALUES(is_favorite),
       updated_at = VALUES(updated_at)
-  </insert>
-
-  <delete id="deleteGenerationsByBuildId">
-    DELETE FROM build_generations WHERE build_id = #{buildId}
-  </delete>
-
-  <insert id="insertGenerations">
-    INSERT INTO build_generations (build_id, generation)
-    VALUES
-    <foreach collection="values" item="value" separator=",">
-      (#{buildId}, #{value})
-    </foreach>
   </insert>
 
   <delete id="deleteBuildById">

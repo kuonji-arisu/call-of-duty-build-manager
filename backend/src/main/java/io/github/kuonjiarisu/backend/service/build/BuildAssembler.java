@@ -1,8 +1,5 @@
 package io.github.kuonjiarisu.backend.service.build;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.stereotype.Component;
 
 import io.github.kuonjiarisu.backend.model.Build;
@@ -13,12 +10,12 @@ import io.github.kuonjiarisu.backend.model.Weapon;
 @Component
 public class BuildAssembler {
 
-    public Build toBuild(BuildRow row, Map<String, List<String>> generationsByBuildId) {
+    public Build toBuild(BuildRow row) {
         return new Build(
             row.id(),
             row.weaponId(),
             row.name(),
-            generationsByBuildId.getOrDefault(row.id(), List.of()),
+            row.generation(),
             row.notes(),
             row.sortOrder(),
             row.isFavorite(),
@@ -29,8 +26,7 @@ public class BuildAssembler {
 
     public BuildSummary toSummary(
         BuildRow row,
-        Map<String, List<String>> generationsByBuildId,
-        Map<String, Integer> itemCountsByBuildId,
+        java.util.Map<String, Integer> itemCountsByBuildId,
         Weapon weapon
     ) {
         return new BuildSummary(
@@ -38,7 +34,7 @@ public class BuildAssembler {
             row.weaponId(),
             weapon == null ? "未知武器" : weapon.name(),
             row.name(),
-            generationsByBuildId.getOrDefault(row.id(), List.of()),
+            row.generation(),
             row.notes(),
             row.sortOrder(),
             row.isFavorite(),

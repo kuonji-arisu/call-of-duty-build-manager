@@ -14,14 +14,14 @@ const props = withDefaults(
     source?: "admin" | "public";
     weaponId: string;
     attachmentSlot: Slot;
-    generations?: Generation[];
+    generation?: Generation;
     selectedAttachment?: AttachmentOption | null;
     placeholder?: string;
     disabled?: boolean;
   }>(),
   {
     source: "admin",
-    generations: () => [],
+    generation: "",
     selectedAttachment: null,
     placeholder: "搜索配件",
     disabled: false,
@@ -65,7 +65,7 @@ const { loading, search, debouncedSearch } = useGuardedRemoteSearch(
     const query = {
       keyword,
       slot: props.attachmentSlot,
-      generations: props.generations,
+      generation: props.generation,
       pageSize: 30,
     };
     const result = props.source === "public"
@@ -90,7 +90,7 @@ function handleUpdate(value: string | null, option: SelectOption | null) {
 }
 
 watch(
-  () => [props.weaponId, props.attachmentSlot, props.generations.join(",")],
+  () => [props.weaponId, props.attachmentSlot, props.generation],
   () => {
     remoteOptions.value = [];
     void search();

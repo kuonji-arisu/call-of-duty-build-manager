@@ -1,4 +1,5 @@
 import { createId } from "../utils/records";
+import { getGenerationOptions } from "../utils/labels";
 import type { Attachment, AttachmentEffectType, AttachmentTag, Generation, Slot } from "../types";
 
 export interface AttachmentEffectRowState {
@@ -36,7 +37,7 @@ export function createEmptyAttachmentForm(): AttachmentFormState {
     name: "",
     subtitle: "",
     slot: "optic",
-    generations: ["BO7"],
+    generations: getGenerationOptions().slice(0, 1).map((option) => option.value),
     tags: [],
     effects: [],
     sortOrder: 0,

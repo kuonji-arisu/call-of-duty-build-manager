@@ -74,7 +74,11 @@ const {
   onError: setErrorMessage,
 });
 
-const generationSelectOptions = computed(() => toSelectOptions(getGenerationOptions()));
+const generationSelectOptions = computed(() => {
+  const options = getGenerationOptions();
+  const generations = selectedFilterWeapon.value?.generations ?? [];
+  return toSelectOptions(generations.length ? options.filter((option) => generations.includes(option.value)) : options);
+});
 const favoriteOptions = [
   { label: "全部", value: "ALL" },
   { label: "仅收藏", value: "true" },
@@ -153,6 +157,13 @@ function closeEditor() {
   closeBuildEditor(preferredWeapon.value);
 }
 
+function handleFilterWeaponUpdate(weapon: WeaponOption | null) {
+  selectedFilterWeapon.value = weapon;
+  if (weapon && filters.generation !== "ALL" && !weapon.generations.includes(filters.generation)) {
+    filters.generation = "ALL";
+  }
+}
+
 function requestCloseEditor() {
   requestCloseBuildEditor(preferredWeapon.value);
 }
@@ -209,8 +220,7 @@ async function saveBuild() {
     if (!weapon || weapon.id !== weaponId) {
       throw new Error("请重新搜索并选择所属武器");
     }
-    const invalidGeneration = buildPayload.generations.find((generation) => !weapon.generations.includes(generation));
-    if (invalidGeneration) {
+    if (!weapon.generations.includes(buildPayload.generation)) {
       throw new Error("配装代际必须属于所属武器");
     }
     validateSelectedAttachments(buildPayload.items);
@@ -265,8 +275,12 @@ const { confirmDelete } = useDeleteConfirm<BuildSummary>({
               <n-input v-model:value="filters.keyword" clearable placeholder="输入配装名称" />
             </n-form-item>
             <n-form-item label="所属武器">
-              <WeaponRemoteSelect v-model:value="filters.weaponId" v-model:selected-weapon="selectedFilterWeapon"
-                placeholder="全部武器" />
+              <WeaponRemoteSelect
+                v-model:value="filters.weaponId"
+                :selected-weapon="selectedFilterWeapon"
+                placeholder="全部武器"
+                @update:selected-weapon="handleFilterWeaponUpdate"
+              />
             </n-form-item>
             <n-form-item label="代际">
               <n-select v-model:value="filters.generation"

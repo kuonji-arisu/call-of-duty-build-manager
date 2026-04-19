@@ -89,12 +89,12 @@ public class BuildQueryService {
             weaponQueryService.findByIds(List.of(row.weaponId())).get(row.weaponId())
         );
         var build = buildHydrator.toBuilds(List.of(row)).getFirst();
-        if (!weapon.generations().containsAll(build.generations())) {
+        if (!weapon.generations().contains(build.generation())) {
             log.warn(
-                "Rejected build detail read because build generations are outside weapon generations: buildId={} weaponId={} buildGenerations={} weaponGenerations={}",
+                "Rejected build detail read because build generation is outside weapon generations: buildId={} weaponId={} buildGeneration={} weaponGenerations={}",
                 build.id(),
                 weapon.id(),
-                build.generations(),
+                build.generation(),
                 weapon.generations()
             );
             throw new IllegalArgumentException("配装代际与所属武器不匹配");

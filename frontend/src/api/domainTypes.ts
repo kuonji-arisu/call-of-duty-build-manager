@@ -38,7 +38,7 @@ export interface OptionSearchQuery extends PageQuery {
 
 export interface WeaponAttachmentOptionQuery extends OptionSearchQuery {
   slot?: Slot | "ALL";
-  generations?: Generation[];
+  generation?: Generation;
 }
 
 export interface AttachmentBindingListQuery extends AttachmentListQuery {

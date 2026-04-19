@@ -27,9 +27,7 @@ withDefaults(defineProps<{
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <TagBadge v-for="generation in build.generations" :key="generation" tone="muted">
-          {{ getGenerationLabel(generation) }}
-        </TagBadge>
+        <TagBadge tone="muted">{{ getGenerationLabel(build.generation) }}</TagBadge>
       </div>
 
       <p v-if="showNotes && build.notes" class="line-clamp-2 text-sm leading-6 text-slate-400">

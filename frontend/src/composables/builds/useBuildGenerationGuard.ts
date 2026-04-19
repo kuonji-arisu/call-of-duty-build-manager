@@ -37,7 +37,7 @@ export function useBuildGenerationGuard({
   const revertingGenerationChange = ref(false);
 
   function captureGenerationSnapshot() {
-    generationSnapshotKey.value = form.generations.join("|");
+    generationSnapshotKey.value = form.generation;
   }
 
   function hasSelectedSlotAttachments() {
@@ -46,7 +46,7 @@ export function useBuildGenerationGuard({
 
   function revertGenerationChange() {
     revertingGenerationChange.value = true;
-    form.generations = generationSnapshotKey.value.split("|").filter(Boolean) as Generation[];
+    form.generation = generationSnapshotKey.value as Generation;
     void nextTick(() => {
       revertingGenerationChange.value = false;
     });
@@ -78,7 +78,7 @@ export function useBuildGenerationGuard({
   }
 
   watch(
-    () => form.generations.join("|"),
+    () => form.generation,
     (value) => {
       if (!editorVisible.value || revertingGenerationChange.value || value === generationSnapshotKey.value) {
         return;

@@ -1,3 +1,4 @@
+import { getGenerationOptions } from "../utils/labels";
 import type { Generation, Slot, Weapon, WeaponTag, WeaponType } from "../types";
 
 export interface WeaponFormState {
@@ -17,7 +18,7 @@ export function createEmptyWeaponForm(): WeaponFormState {
     name: "",
     weaponType: "assault-rifle",
     tags: [],
-    generations: ["BO7"],
+    generations: getGenerationOptions().slice(0, 1).map((option) => option.value),
     slots: ["optic", "muzzle", "underbarrel"],
     sortOrder: 0,
     isFavorite: false,

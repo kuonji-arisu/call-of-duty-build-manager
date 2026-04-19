@@ -6,7 +6,7 @@ export interface Build {
   id: string;
   weaponId: string;
   name: string;
-  generations: Generation[];
+  generation: Generation;
   notes?: string | null;
   sortOrder: number;
   isFavorite: boolean;
@@ -17,7 +17,7 @@ export interface Build {
 export interface BuildSavePayload {
   weaponId: string;
   name: string;
-  generations: Generation[];
+  generation: Generation;
   notes?: string | null;
   sortOrder: number;
   isFavorite: boolean;

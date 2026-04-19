@@ -57,7 +57,11 @@ const filters = reactive({
   favorite: "ALL" as FavoriteFilter,
 });
 
-const generationSelectOptions = computed(() => toSelectOptions(getGenerationOptions()));
+const generationSelectOptions = computed(() => {
+  const options = getGenerationOptions();
+  const generations = selectedFilterWeapon.value?.generations ?? [];
+  return toSelectOptions(generations.length ? options.filter((option) => generations.includes(option.value)) : options);
+});
 const favoriteOptions = [
   { label: "全部", value: "ALL" },
   { label: "仅收藏", value: "true" },
@@ -106,7 +110,7 @@ const filteredBuilds = computed(() => {
         build.name.toLowerCase().includes(search) ||
         weaponName.toLowerCase().includes(search);
       const matchesWeapon = !filters.weaponId || build.weaponId === filters.weaponId;
-      const matchesGeneration = filters.generation === "ALL" || build.generations.includes(filters.generation);
+      const matchesGeneration = filters.generation === "ALL" || build.generation === filters.generation;
       const matchesFavorite =
         filters.favorite === "ALL" ||
         (filters.favorite === "true" ? build.isFavorite : !build.isFavorite);
@@ -216,6 +220,9 @@ function handleFormWeaponUpdate(weapon: WeaponOption | null) {
 
 function handleFilterWeaponUpdate(weapon: WeaponOption | null) {
   selectedFilterWeapon.value = weapon;
+  if (weapon && filters.generation !== "ALL" && !weapon.generations.includes(filters.generation)) {
+    filters.generation = "ALL";
+  }
   if (weapon) {
     cacheWeapon(weapon);
   }
@@ -273,8 +280,7 @@ async function saveBuild() {
     if (!weapon || weapon.id !== weaponId) {
       throw new Error("请重新搜索并选择所属武器");
     }
-    const invalidGeneration = buildRecord.generations.find((generation) => !weapon.generations.includes(generation));
-    if (invalidGeneration) {
+    if (!weapon.generations.includes(buildRecord.generation)) {
       throw new Error("配装代际必须属于所属武器");
     }
     const buildItems = buildLocalBuildItemRecords(buildRecord.id, form, weapon, currentItems.value);

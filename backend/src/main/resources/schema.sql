@@ -87,18 +87,13 @@ CREATE TABLE IF NOT EXISTS builds (
     id VARCHAR(64) NOT NULL PRIMARY KEY,
     weapon_id VARCHAR(64) NOT NULL,
     name VARCHAR(120) NOT NULL,
+    generation VARCHAR(32) NOT NULL,
     notes TEXT NULL,
     sort_order INT NOT NULL DEFAULT 0,
     is_favorite BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
     KEY idx_builds_weapon_id (weapon_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS build_generations (
-    build_id VARCHAR(64) NOT NULL,
-    generation VARCHAR(32) NOT NULL,
-    PRIMARY KEY (build_id, generation)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS build_items (

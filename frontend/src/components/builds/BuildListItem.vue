@@ -35,9 +35,7 @@ function getItemCount() {
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <TagBadge v-for="generation in build.generations" :key="generation" tone="muted">
-          {{ getGenerationLabel(generation) }}
-        </TagBadge>
+        <TagBadge tone="muted">{{ getGenerationLabel(build.generation) }}</TagBadge>
         <TagBadge tone="default">{{ getItemCount() }} 个配件</TagBadge>
       </div>
     </div>

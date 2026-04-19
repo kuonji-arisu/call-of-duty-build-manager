@@ -99,12 +99,10 @@ public class AttachmentQueryService {
             return new PageResult<>(List.of(), 0, normalizedPage, normalizedPageSize);
         }
 
-        var candidateGenerations = normalizedGeneration == null ? List.<String>of() : List.of(normalizedGeneration);
         var total = attachmentMapper.countAvailableRowsForWeapon(
             weapon.id(),
             weapon.slots(),
             weapon.generations(),
-            candidateGenerations,
             normalizedKeyword,
             normalizedSlot,
             normalizedGeneration,
@@ -114,7 +112,6 @@ public class AttachmentQueryService {
             weapon.id(),
             weapon.slots(),
             weapon.generations(),
-            candidateGenerations,
             normalizedKeyword,
             normalizedSlot,
             normalizedGeneration,
@@ -184,18 +181,18 @@ public class AttachmentQueryService {
         Integer pageSize,
         String keyword,
         String slot,
-        List<String> generations
+        String generation
     ) {
         var weapon = weaponQueryService.findById(weaponId);
         var normalizedPage = PageSupport.normalizePage(page);
         var normalizedPageSize = PageSupport.normalizePageSize(pageSize);
         var normalizedKeyword = PageSupport.normalizeText(keyword);
         var normalizedSlot = PageSupport.normalizeText(slot);
-        var candidateGenerations = DomainSupport.normalizeList(generations);
+        var normalizedGeneration = PageSupport.normalizeText(generation);
         if (weapon.slots().isEmpty()
             || weapon.generations().isEmpty()
             || (normalizedSlot != null && !weapon.slots().contains(normalizedSlot))
-            || !weapon.generations().containsAll(candidateGenerations)) {
+            || (normalizedGeneration != null && !weapon.generations().contains(normalizedGeneration))) {
             return new PageResult<>(List.of(), 0, normalizedPage, normalizedPageSize);
         }
 
@@ -203,10 +200,9 @@ public class AttachmentQueryService {
             weapon.id(),
             weapon.slots(),
             weapon.generations(),
-            candidateGenerations,
             normalizedKeyword,
             normalizedSlot,
-            null,
+            normalizedGeneration,
             null,
             normalizedPageSize,
             PageSupport.offset(normalizedPage, normalizedPageSize)
@@ -215,10 +211,9 @@ public class AttachmentQueryService {
             weapon.id(),
             weapon.slots(),
             weapon.generations(),
-            candidateGenerations,
             normalizedKeyword,
             normalizedSlot,
-            null,
+            normalizedGeneration,
             null
         );
         return new PageResult<>(

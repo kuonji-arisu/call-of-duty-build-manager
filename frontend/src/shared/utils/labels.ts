@@ -1,7 +1,6 @@
 import {
   ATTACHMENT_EFFECT_TYPES,
   ATTACHMENT_TAGS,
-  GENERATIONS,
   SLOTS,
   WEAPON_TAGS,
   WEAPON_TYPES,
@@ -14,10 +13,7 @@ import {
   type WeaponType,
 } from "../types/common";
 
-const generationLabels: Record<Generation, string> = {
-  BO7: "BO7",
-  WZ: "Warzone",
-};
+let generationOptions: OptionItem<Generation>[] = [];
 
 const weaponTypeLabels: Record<WeaponType, string> = {
   "assault-rifle": "突击步枪",
@@ -58,7 +54,11 @@ const attachmentEffectTypeLabels: Record<AttachmentEffectType, string> = {
 };
 
 export function getGenerationLabel(value: Generation): string {
-  return generationLabels[value];
+  return generationOptions.find((option) => option.value === value)?.label ?? value;
+}
+
+export function setGenerationOptions(options: OptionItem<Generation>[]) {
+  generationOptions = options.map((option) => ({ ...option }));
 }
 
 export function getWeaponTypeLabel(value: WeaponType): string {
@@ -107,7 +107,7 @@ export function getAttachmentEffectTypeOptions(): OptionItem<AttachmentEffectTyp
 }
 
 export function getGenerationOptions(): OptionItem<Generation>[] {
-  return GENERATIONS.map((value) => ({ value, label: getGenerationLabel(value) }));
+  return generationOptions.map((option) => ({ ...option }));
 }
 
 export function getWeaponTypeOptions(): OptionItem<WeaponType>[] {

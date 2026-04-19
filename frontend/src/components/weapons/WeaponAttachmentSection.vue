@@ -27,6 +27,7 @@ type TagFilter = AttachmentTag | "ALL";
 interface WeaponAttachmentSectionWeapon {
   id: string;
   slots: Slot[];
+  generations: string[];
 }
 
 const props = withDefaults(defineProps<{
@@ -66,7 +67,15 @@ const filters = reactive({
   tag: "ALL" as TagFilter,
 });
 
-const generationOptions = computed(() => toSelectOptions(getGenerationOptions()));
+const generationOptions = computed(() => {
+  const availableGenerations = props.weapon?.generations ?? [];
+  const options = getGenerationOptions();
+  return toSelectOptions(
+    availableGenerations.length
+      ? options.filter((option) => availableGenerations.includes(option.value))
+      : options,
+  );
+});
 const attachmentTagOptions = computed(() => toSelectOptions(getAttachmentTagOptions()));
 const slotOptions = computed(() =>
   (props.weapon?.slots ?? []).map((slot) => ({

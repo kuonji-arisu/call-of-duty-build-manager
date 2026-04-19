@@ -150,7 +150,7 @@ public class ReferenceGuardService {
             && attachment.slot().equals(item.slot())
             && attachment.weaponIds().contains(weapon.id())
             && intersects(attachment.generations(), weapon.generations())
-            && intersects(attachment.generations(), build.generations());
+            && attachment.generations().contains(build.generation());
     }
 
     public Weapon requireReadableBuildWeapon(Weapon weapon) {

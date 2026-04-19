@@ -35,7 +35,7 @@ function isReadableLocalBuildItem(
     && attachment.slot === item.slot
     && attachment.weaponIds.includes(weapon.id)
     && intersects(attachment.generations, weapon.generations)
-    && intersects(attachment.generations, build.generations);
+    && attachment.generations.includes(build.generation);
 }
 
 async function loadLocalAttachments(weapon: Weapon, items: BuildItem[]) {
@@ -56,9 +56,7 @@ async function loadLocalDetail(id: string): Promise<BuildDetail> {
   }
 
   const weapon = await publicWeaponsApi.getWeapon(build.weaponId);
-  const hasValidGeneration = build.generations.length === 1
-    && build.generations.every((generation) => weapon.generations.includes(generation));
-  if (!hasValidGeneration) {
+  if (!weapon.generations.includes(build.generation)) {
     throw new Error("配装代际与所属武器不匹配");
   }
 

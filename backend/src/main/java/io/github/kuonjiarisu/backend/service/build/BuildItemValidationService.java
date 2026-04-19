@@ -41,12 +41,8 @@ public class BuildItemValidationService {
     }
 
     private void validateBuildGenerations(Build build, Weapon weapon) {
-        var weaponGenerations = new HashSet<>(weapon.generations());
-        var invalidGenerations = build.generations().stream()
-            .filter(generation -> !weaponGenerations.contains(generation))
-            .toList();
-        if (!invalidGenerations.isEmpty()) {
-            throw new IllegalArgumentException("配装代际不属于所属武器: " + String.join(", ", invalidGenerations));
+        if (!weapon.generations().contains(build.generation())) {
+            throw new IllegalArgumentException("配装代际不属于所属武器: " + build.generation());
         }
     }
 
@@ -78,7 +74,7 @@ public class BuildItemValidationService {
             throw new IllegalArgumentException("配件代际与武器不匹配: " + attachment.name());
         }
 
-        if (!referenceGuardService.intersects(attachment.generations(), build.generations())) {
+        if (!attachment.generations().contains(build.generation())) {
             throw new IllegalArgumentException("配件代际与配装不匹配: " + attachment.name());
         }
     }

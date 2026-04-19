@@ -1,4 +1,3 @@
-export const GENERATIONS = ["BO7", "WZ"] as const;
 export const WEAPON_TAGS = ["seasonal"] as const;
 export const ATTACHMENT_TAGS = ["prestige", "seasonal"] as const;
 export const ATTACHMENT_EFFECT_TYPES = ["pro", "con"] as const;
@@ -25,7 +24,7 @@ export const SLOTS = [
   "shooting-module",
 ] as const;
 
-export type Generation = (typeof GENERATIONS)[number];
+export type Generation = string;
 export type WeaponTag = (typeof WEAPON_TAGS)[number];
 export type AttachmentTag = (typeof ATTACHMENT_TAGS)[number];
 export type AttachmentEffectType = (typeof ATTACHMENT_EFFECT_TYPES)[number];
